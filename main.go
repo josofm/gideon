@@ -58,13 +58,46 @@ func getDeck(w http.ResponseWriter, r *http.Request) {
 }
 
 func addDeck(w http.ResponseWriter, r *http.Request) {
+	var deck Deck
+
+	_ = json.NewDecoder(r.Body).Decode(&deck)
+
+	decks = append(decks, deck)
+
+	json.NewEncoder(w).Encode(decks)
+
 	log.Println("Add deck is called")
 }
 
 func updateDeck(w http.ResponseWriter, r *http.Request) {
+	var deck Deck
+	_ = json.NewDecoder(r.Body).Decode(&deck)
+
+	for i, item := range decks {
+		if item.ID == deck.ID {
+			decks[i] = deck
+		}
+	}
+
+	json.NewEncoder(w).Encode(decks)
+
 	log.Println("Update deck is called")
 }
 
 func removeDeck(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	idInteger, err := strconv.Atoi(params["id"])
+	if err != nil {
+		log.Fatalln("Could not convert to int")
+	}
+
+	for i, item := range decks {
+		if item.ID == idInteger {
+			decks = append(decks[:i], decks[i+1:]...)
+		}
+	}
+	json.NewEncoder(w).Encode(decks)
+
 	log.Println("Delete deck is called")
 }
