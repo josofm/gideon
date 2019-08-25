@@ -1,23 +1,19 @@
 package main
 
 import (
+	"commander-list/controller"
+	"commander-list/driver"
+	"commander-list/model"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/lib/pq"
 	"github.com/subosito/gotenv"
 	"log"
 	"net/http"
-	"os"
 )
 
-type Deck struct {
-	ID        int    `json:id`
-	Commander string `json:commander` //will be type card
-	Owner     string `json:owner`     //will be type user
-}
-
-var decks []Deck
+var decks []model.Deck
 var db *sql.DB
 
 func init() {
@@ -31,62 +27,23 @@ func logFatal(err error) {
 }
 
 func main() {
-	pgUrl, err := pq.ParseURL(os.Getenv("ELEPHANTSQL_URL"))
-	logFatal(err)
-
-	db, err = sql.Open("postgres", pgUrl)
-	logFatal(err)
-
-	err = db.Ping()
-	logFatal(err)
+	db = driver.ConnectDB()
+	controller := controller.Controller{}
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/decks", getDecks).Methods("GET")
-	router.HandleFunc("/decks/{id}", getDeck).Methods("GET")
+	router.HandleFunc("/decks", controller.GetDecks(db)).Methods("GET")
+	router.HandleFunc("/decks/{id}", controller.GetDeck(db)).Methods("GET")
 	router.HandleFunc("/decks", addDeck).Methods("POST")
 	router.HandleFunc("/decks", updateDeck).Methods("PUT")
 	router.HandleFunc("/decks/{id}", removeDeck).Methods("DELETE")
 
+	fmt.Println("Server is running at port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
-func getDecks(w http.ResponseWriter, r *http.Request) {
-	var deck Deck
-	decks = []Deck{}
-
-	rows, err := db.Query("select * from decks")
-	logFatal(err)
-
-	defer rows.Close()
-
-	for rows.Next() {
-		err := rows.Scan(&deck.ID, &deck.Commander, &deck.Owner)
-		logFatal(err)
-
-		decks = append(decks, deck)
-	}
-
-	json.NewEncoder(w).Encode(decks)
-
-	log.Println("Get decks is called")
-}
-
-func getDeck(w http.ResponseWriter, r *http.Request) {
-	var deck Deck
-	params := mux.Vars(r)
-
-	rows := db.QueryRow("select * from decks where id=$1", params["id"])
-	err := rows.Scan(&deck.ID, &deck.Commander, &deck.Owner)
-	logFatal(err)
-
-	json.NewEncoder(w).Encode(deck)
-
-	log.Println("Get deck is called")
-}
-
 func addDeck(w http.ResponseWriter, r *http.Request) {
-	var deck Deck
+	var deck model.Deck
 	var deckID int
 
 	json.NewDecoder(r.Body).Decode(&deck)
@@ -101,7 +58,7 @@ func addDeck(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateDeck(w http.ResponseWriter, r *http.Request) {
-	var deck Deck
+	var deck model.Deck
 	json.NewDecoder(r.Body).Decode(&deck)
 
 	result, err := db.Exec("update decks set owner=$1, commander=$2 where id=$3 RETURNING id;",
