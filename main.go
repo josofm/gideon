@@ -5,7 +5,6 @@ import (
 	"commander-list/driver"
 	"commander-list/model"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/subosito/gotenv"
@@ -34,54 +33,10 @@ func main() {
 
 	router.HandleFunc("/decks", controller.GetDecks(db)).Methods("GET")
 	router.HandleFunc("/decks/{id}", controller.GetDeck(db)).Methods("GET")
-	router.HandleFunc("/decks", addDeck).Methods("POST")
-	router.HandleFunc("/decks", updateDeck).Methods("PUT")
-	router.HandleFunc("/decks/{id}", removeDeck).Methods("DELETE")
+	router.HandleFunc("/decks", controller.AddDeck(db)).Methods("POST")
+	router.HandleFunc("/decks", controller.UpdateDeck(db)).Methods("PUT")
+	router.HandleFunc("/decks/{id}", controller.RemoveDeck(db)).Methods("DELETE")
 
 	fmt.Println("Server is running at port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
-}
-
-func addDeck(w http.ResponseWriter, r *http.Request) {
-	var deck model.Deck
-	var deckID int
-
-	json.NewDecoder(r.Body).Decode(&deck)
-
-	err := db.QueryRow("insert into decks (owner, commander) values($1, $2) RETURNING id;",
-		deck.Owner, deck.Commander).Scan(&deckID)
-	logFatal(err)
-
-	json.NewEncoder(w).Encode(deckID)
-
-	log.Println("Add deck is called")
-}
-
-func updateDeck(w http.ResponseWriter, r *http.Request) {
-	var deck model.Deck
-	json.NewDecoder(r.Body).Decode(&deck)
-
-	result, err := db.Exec("update decks set owner=$1, commander=$2 where id=$3 RETURNING id;",
-		&deck.Owner, &deck.Commander, &deck.ID)
-	logFatal(err)
-
-	rowsUpdated, err := result.RowsAffected()
-	logFatal(err)
-
-	json.NewEncoder(w).Encode(rowsUpdated)
-
-	log.Println("Update deck is called")
-}
-
-func removeDeck(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	result, err := db.Exec("delete from decks where id = $1", params["id"])
-	logFatal(err)
-
-	rowsDeleted, err := result.RowsAffected()
-	logFatal(err)
-
-	json.NewEncoder(w).Encode(rowsDeleted)
-
-	log.Println("Delete deck is called")
 }
