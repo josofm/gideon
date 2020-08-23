@@ -31,7 +31,12 @@ func (d DeckRepository) GetDecks(db *sql.DB, deck model.Deck, decks []model.Deck
 func (d DeckRepository) GetDeck(db *sql.DB, deck model.Deck, id int) (model.Deck, error) {
 	rows := db.QueryRow("select * from decks where id=$1", id)
 	err := rows.Scan(&deck.ID, &deck.Commander, &deck.Owner)
-	return deck, err
+
+	if err != nil {
+		return model.Deck{}, err
+	}
+
+	return deck, nil
 
 }
 
