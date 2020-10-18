@@ -1,8 +1,9 @@
 package deckRepository
 
 import (
-	"commander-list/model"
 	"database/sql"
+
+	"github.com/josofm/gideon/model"
 )
 
 type DeckRepository struct{}

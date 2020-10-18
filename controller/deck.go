@@ -1,15 +1,16 @@
 package controller
 
 import (
-	"commander-list/model"
-	"commander-list/repository/deck"
-	"commander-list/utils"
 	"database/sql"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/josofm/gideon/model"
+	repository "github.com/josofm/gideon/repository/deck"
+	"github.com/josofm/gideon/utils"
 )
 
 type Controller struct{}
@@ -27,7 +28,7 @@ func (c Controller) GetDecks(db *sql.DB) http.HandlerFunc {
 		var deck model.Deck
 		var error model.Error
 		decks = []model.Deck{}
-		deckRepo := deckRepository.DeckRepository{}
+		deckRepo := repository.DeckRepository{}
 
 		decks, err := deckRepo.GetDecks(db, deck, decks)
 
@@ -50,7 +51,7 @@ func (c Controller) GetDeck(db *sql.DB) http.HandlerFunc {
 
 		decks = []model.Deck{}
 
-		deckRepo := deckRepository.DeckRepository{}
+		deckRepo := repository.DeckRepository{}
 
 		params := mux.Vars(r)
 
@@ -90,7 +91,7 @@ func (c Controller) AddDeck(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		deckRepo := deckRepository.DeckRepository{}
+		deckRepo := repository.DeckRepository{}
 		deckID, err := deckRepo.AddDeck(db, deck)
 
 		if err != nil {
@@ -118,7 +119,7 @@ func (c Controller) UpdateDeck(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		deckRepo := deckRepository.DeckRepository{}
+		deckRepo := repository.DeckRepository{}
 		rowsUpdated, err := deckRepo.UpdateDeck(db, deck)
 
 		if err != nil {
@@ -138,7 +139,7 @@ func (c Controller) RemoveDeck(db *sql.DB) http.HandlerFunc {
 
 		var error model.Error
 		params := mux.Vars(r)
-		deckRepo := deckRepository.DeckRepository{}
+		deckRepo := repository.DeckRepository{}
 		id, _ := strconv.Atoi(params["id"])
 
 		rowsDeleted, err := deckRepo.RemoveDeck(db, id)

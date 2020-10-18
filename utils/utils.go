@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"commander-list/model"
 	"encoding/json"
 	"net/http"
+
+	"github.com/josofm/gideon/model"
 )
 
 func SendError(w http.ResponseWriter, status int, err model.Error) {

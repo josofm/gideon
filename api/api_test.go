@@ -3,10 +3,29 @@
 package api_test
 
 import (
-	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/josofm/gideon/api"
+	"github.com/josofm/gideon/controller"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestBla(t *testing.T) {
-	assert.Equal(t, "a", "b", "just running")
+func TestUpAPI(t *testing.T) {
+	c := controller.Controller{}
+	api := api.NewApi(c)
+
+	r, err := http.NewRequest("GET", "/up", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(api.Up)
+
+	handler.ServeHTTP(rr, r)
+
+	assert.Nil(t, rr.Code, "e ai?")
+
 }
