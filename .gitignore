@@ -1,3 +1,4 @@
 cmd/gideon/gideon
 .gomodcachedir
 .devimgbuild.logs
+.env
