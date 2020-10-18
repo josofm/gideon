@@ -1,9 +1,13 @@
-FROM golang:1.12-alpine
-LABEL mainterner 'josofm'
+FROM alpine:3.9
 
+RUN apk --no-cache update && \
+	apk --no-cache add ca-certificates tzdata && \
+	rm - rf /var/cache/apk/*
 
-COPY go.mod go.sum ./
+RUN adduser -D -g '' appuser
 
-COPY . .
+COPY ./cmd/gideon/gideon /app/gideon
 
-CMD ["app"]
+EXPOSE 80
+
+ENTRYPOINT ["/app/gideon"]

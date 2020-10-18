@@ -26,6 +26,7 @@ func logFatal(err error) {
 }
 
 func main() {
+	fmt.Println("hduahdueahduaeh")
 	db = driver.ConnectDB()
 	controller := controller.Controller{}
 
