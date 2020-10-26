@@ -1,20 +1,24 @@
 package api
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
-	"github.com/josofm/gideon/controller"
-
 	"github.com/gorilla/mux"
+	"github.com/josofm/gideon/model"
 )
 
 type Api struct {
 	server     *http.Server
-	controller controller.Controller
+	controller Controller
 }
 
-func NewApi(c controller.Controller) *Api {
+type Controller interface {
+	Login(name, pass string) (model.User, error)
+}
+
+func NewApi(c Controller) *Api {
 	api := Api{
 		controller: c,
 	}
@@ -27,7 +31,7 @@ func (api *Api) StartServer() error {
 	//routes
 
 	router.HandleFunc("/up", api.Up).Methods("GET")
-	router.HandleFunc("/login", api.Login).Methods("POST")
+	router.HandleFunc("/login", api.login).Methods("POST")
 
 	api.server = &http.Server{Addr: ":8000", Handler: router}
 	log.Print("Server is running at port 8000")
@@ -42,9 +46,24 @@ func (api *Api) Up(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (api *Api) Login(w http.ResponseWriter, r *http.Request) {
-	log.Print("TODO implement this")
-	w.WriteHeader(http.StatusOK)
+func (api *Api) login(w http.ResponseWriter, r *http.Request) {
+	var user model.User
+
+	err := json.NewDecoder(r.Body).Decode(user)
+	if err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	resp, err := api.controller.Login(user.Email, user.Password)
+	if err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+
 }
 
 // router := mux.NewRouter()

@@ -1,4 +1,4 @@
-package deckRepository
+package deck
 
 import (
 	"database/sql"
@@ -7,6 +7,10 @@ import (
 )
 
 type DeckRepository struct{}
+
+func NewDeckRepository() *DeckRepository {
+	return &DeckRepository{}
+}
 
 func (d DeckRepository) GetDecks(db *sql.DB, deck model.Deck, decks []model.Deck) ([]model.Deck, error) {
 
