@@ -1,14 +1,10 @@
 package test
 
-import (
-	"github.com/josofm/gideon/model"
-)
-
 type ControllerMock struct {
-	User model.User
-	Err  error
+	Token map[string]interface{}
+	Err   error
 }
 
-func (c *ControllerMock) Login(name, pass string) (model.User, error) {
-	return c.User, c.Err
+func (c *ControllerMock) Login(name, pass string) (map[string]interface{}, error) {
+	return c.Token, c.Err
 }

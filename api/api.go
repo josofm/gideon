@@ -15,7 +15,7 @@ type Api struct {
 }
 
 type Controller interface {
-	Login(name, pass string) (model.User, error)
+	Login(name, pass string) (map[string]interface{}, error)
 }
 
 func NewApi(c Controller) *Api {
@@ -52,12 +52,12 @@ func (api *Api) login(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	err := decoder.Decode(&user)
-	_, err = api.controller.Login(user.Email, user.Password)
+	token, err := api.controller.Login(user.Email, user.Password)
 	if err != nil || (model.User{}) == user {
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
 
 	}
-	send(w, http.StatusOK, nil)
+	send(w, http.StatusOK, token)
 	return
 
 }

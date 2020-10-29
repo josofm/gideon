@@ -4,12 +4,12 @@ package api_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/josofm/gideon/api"
-	"github.com/josofm/gideon/model"
 	"github.com/josofm/gideon/test"
 
 	"github.com/stretchr/testify/assert"
@@ -19,9 +19,9 @@ type fixture struct {
 	api *api.Api
 }
 
-func setup(user model.User, err error) fixture {
+func setup(token map[string]interface{}, err error) fixture {
 	c := &test.ControllerMock{}
-	c.User = user
+	c.Token = token
 	c.Err = err
 	api := api.NewApi(c)
 
@@ -32,7 +32,7 @@ func setup(user model.User, err error) fixture {
 }
 
 func TestUpAPI(t *testing.T) {
-	f := setup(model.User{}, nil)
+	f := setup(nil, nil)
 
 	handler := http.HandlerFunc(f.api.Up)
 	r, err := http.NewRequest("GET", "/up", nil)
@@ -47,7 +47,11 @@ func TestUpAPI(t *testing.T) {
 }
 
 func TestShouldLoginCorrectly(t *testing.T) {
-	f := setup(model.User{}, nil)
+	expectedJwt := map[string]interface{}{
+		"token": "tokenzera",
+	}
+
+	f := setup(expectedJwt, nil)
 
 	body := []byte(`{"email": "gideon@mtg.com", "password": "ravnica"}`)
 
@@ -58,14 +62,17 @@ func TestShouldLoginCorrectly(t *testing.T) {
 
 	handler.ServeHTTP(rr, r)
 
+	var actual map[string]interface{}
+	_ = json.Unmarshal(rr.Body.Bytes(), &actual)
+
 	assert.Nil(t, err, "Should be null!")
 	assert.Equal(t, http.StatusOK, rr.Code, "Status code Should be equal!")
-	// assert.Equal(t, expectedJwt)
+	assert.Equal(t, expectedJwt, actual, "Token should be equal!")
 
 }
 
 func TestShouldGetErrorWhenBodyIsWrong(t *testing.T) {
-	f := setup(model.User{}, nil)
+	f := setup(nil, nil)
 	body := []byte(`{"wrongField": "treta"}`)
 
 	r, err := http.NewRequest("POST", "/login", bytes.NewBuffer(body))
@@ -76,5 +83,4 @@ func TestShouldGetErrorWhenBodyIsWrong(t *testing.T) {
 
 	assert.Nil(t, err, "Should be null!")
 	assert.Equal(t, http.StatusInternalServerError, rr.Code, "Status code Should be equal!")
-
 }
