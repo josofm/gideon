@@ -49,7 +49,7 @@ func TestUpAPI(t *testing.T) {
 func TestShouldLoginCorrectly(t *testing.T) {
 	f := setup(model.User{}, nil)
 
-	body := []byte(`{"user": gideon, "password": "ravnica"}`)
+	body := []byte(`{"email": "gideon@mtg.com", "password": "ravnica"}`)
 
 	r, err := http.NewRequest("POST", "/login", bytes.NewBuffer(body))
 
@@ -61,5 +61,20 @@ func TestShouldLoginCorrectly(t *testing.T) {
 	assert.Nil(t, err, "Should be null!")
 	assert.Equal(t, http.StatusOK, rr.Code, "Status code Should be equal!")
 	// assert.Equal(t, expectedJwt)
+
+}
+
+func TestShouldGetErrorWhenBodyIsWrong(t *testing.T) {
+	f := setup(model.User{}, nil)
+	body := []byte(`{"wrongField": "treta"}`)
+
+	r, err := http.NewRequest("POST", "/login", bytes.NewBuffer(body))
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(f.api.Login)
+	handler.ServeHTTP(rr, r)
+
+	assert.Nil(t, err, "Should be null!")
+	assert.Equal(t, http.StatusInternalServerError, rr.Code, "Status code Should be equal!")
 
 }

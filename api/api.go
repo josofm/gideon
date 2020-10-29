@@ -47,23 +47,40 @@ func (api *Api) Up(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *Api) login(w http.ResponseWriter, r *http.Request) {
-	var user model.User
+	user := model.User{}
 
-	err := json.NewDecoder(r.Body).Decode(user)
-	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
-		json.NewEncoder(w).Encode(resp)
-		return
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&user)
+	_, err = api.controller.Login(user.Email, user.Password)
+	if err != nil || (model.User{}) == user {
+		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
+
 	}
-	resp, err := api.controller.Login(user.Email, user.Password)
-	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
-		json.NewEncoder(w).Encode(resp)
-		return
-	}
-	json.NewEncoder(w).Encode(resp)
+	send(w, http.StatusOK, nil)
 	return
 
+}
+
+func send(w http.ResponseWriter, code int, val interface{}) {
+	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, TRACE, GET, HEAD, POST, PUT")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, X-Requested-With")
+	w.WriteHeader(code)
+
+	if val != nil {
+		err := json.NewEncoder(w).Encode(val)
+		if err != nil {
+			log.Printf("error on json encoder err: %s", err.Error())
+		}
+	}
+}
+
+func sendErrorMessage(w http.ResponseWriter, code int, msg string) {
+	log.Printf("Error - %s", msg)
+	send(w, code, msg)
 }
 
 // router := mux.NewRouter()
