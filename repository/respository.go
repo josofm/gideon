@@ -54,12 +54,12 @@ func (r *Repository) connectDB() error {
 
 }
 
-func (r *Repository) Login(name, pass string) (model.User, error) {
+func (r *Repository) Login(email, pass string) (model.User, error) {
 	err := r.connectDB()
 	if err != nil {
 		return model.User{}, err
 	}
-	return r.user.Login(name, pass, r.dbPool)
+	return r.user.Login(email, pass, r.dbPool)
 }
 
 // func (r *Repository) Login(name, pass string) (model.User, error) {

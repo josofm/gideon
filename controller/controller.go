@@ -26,12 +26,12 @@ func logFatal(err error) {
 	}
 }
 
-func (c *Controller) Login(name, pass string) (map[string]interface{}, error) {
+func (c *Controller) Login(email, pass string) (map[string]interface{}, error) {
 	var user model.User
-	if name == "" || pass == "" {
+	if email == "" || pass == "" {
 		return nil, errors.New("some error temporary")
 	}
-	user, err := c.repository.Login(name, pass)
+	user, err := c.repository.Login(email, pass)
 	if err != nil {
 		return nil, err
 	}

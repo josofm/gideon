@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/josofm/gideon/model"
 )
 
@@ -26,12 +25,7 @@ func NewApi(c Controller) *Api {
 }
 
 func (api *Api) StartServer() error {
-	router := mux.NewRouter()
-
-	//routes
-
-	router.HandleFunc("/up", api.Up).Methods("GET")
-	router.HandleFunc("/login", api.login).Methods("POST")
+	router := api.routes()
 
 	api.server = &http.Server{Addr: ":8000", Handler: router}
 	log.Print("Server is running at port 8000")
