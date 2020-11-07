@@ -61,14 +61,3 @@ func (r *Repository) Login(email, pass string) (model.User, error) {
 	}
 	return r.user.Login(email, pass, r.dbPool)
 }
-
-// func (r *Repository) Login(name, pass string) (model.User, error) {
-// 	user := model.User{}
-// 	rows := db.Query("select * from user where name=$1 and password=$2", name, pass)
-// 	err := rows.Scan(&user.ID, &user.Name, &user.Sex, &user.Age, &user.Token)
-// 	if err != nil {
-// 		return model.User{}, err
-// 	}
-
-// 	return model.User, nil
-// }

@@ -9,6 +9,7 @@ import (
 	"github.com/josofm/gideon/repository"
 
 	"github.com/josofm/gideon/api"
+
 	"github.com/subosito/gotenv"
 )
 
@@ -18,7 +19,10 @@ var (
 )
 
 func init() {
-	gotenv.Load()
+	err := gotenv.Load()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
