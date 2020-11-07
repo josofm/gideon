@@ -1,4 +1,4 @@
-package test
+package mock
 
 type ControllerMock struct {
 	Token map[string]interface{}

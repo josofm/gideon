@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/josofm/gideon/api"
-	"github.com/josofm/gideon/test"
+	"github.com/josofm/gideon/mock"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +20,7 @@ type fixture struct {
 }
 
 func setup(token map[string]interface{}, err error) fixture {
-	c := &test.ControllerMock{}
+	c := &mock.ControllerMock{}
 	c.Token = token
 	c.Err = err
 	api := api.NewApi(c)

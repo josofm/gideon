@@ -2,27 +2,34 @@ package controller
 
 import (
 	"errors"
-	"log"
+	"os"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/josofm/gideon/model"
-	repository "github.com/josofm/gideon/repository"
 )
 
 type Controller struct {
-	repository *repository.Repository
+	repository Repository
+	clock      TimeClock
+	secret     string
 }
 
-func NewController(r *repository.Repository) *Controller {
+type Repository interface {
+	Login(email, pass string) (model.User, error)
+}
+
+type TimeClock interface {
+	Now() time.Time
+	Add(t time.Time, d time.Duration) time.Time
+}
+
+func NewController(r Repository, c TimeClock) *Controller {
+	s := os.Getenv("SECRET_JWT")
 	return &Controller{
 		repository: r,
-	}
-}
-
-var decks []model.Deck
-
-func logFatal(err error) {
-	if err != nil {
-		log.Fatal(err)
+		clock:      c,
+		secret:     s,
 	}
 }
 
@@ -35,13 +42,35 @@ func (c *Controller) Login(email, pass string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	//build token
-	body := map[string]interface{}{
-		"token": user.Name,
+
+	t, err := c.createToken(user)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+
+}
+
+func (c *Controller) createToken(user model.User) (map[string]interface{}, error) {
+	expiresAt := c.clock.Now().Add(time.Minute * 100000).Unix()
+	tk := &model.Token{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+		StandardClaims: &jwt.StandardClaims{
+			ExpiresAt: expiresAt,
+		},
 	}
 
-	return body, nil
-
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
+	tokenString, err := token.SignedString([]byte(c.secret))
+	if err != nil {
+		return nil, err
+	}
+	t := map[string]interface{}{
+		"token": tokenString,
+	}
+	return t, nil
 }
 
 // func (c Controller) GetDecks(db *sql.DB) http.HandlerFunc {

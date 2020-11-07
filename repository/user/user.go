@@ -10,10 +10,6 @@ import (
 
 type UserRepository struct{}
 
-func NewUserRepository() *UserRepository {
-	return &UserRepository{}
-}
-
 func (u *UserRepository) Login(email, pass string, dbPool *sql.DB) (model.User, error) {
 	user := model.User{}
 	rows := dbPool.QueryRow("select * from user where email=$1", email)

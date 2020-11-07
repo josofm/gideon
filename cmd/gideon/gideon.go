@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/josofm/gideon/clock"
 	"github.com/josofm/gideon/controller"
 	"github.com/josofm/gideon/repository"
 
@@ -36,7 +37,8 @@ func main() {
 		panic(err)
 	}
 
-	c := controller.NewController(r)
+	clock := &clock.TimeClock{}
+	c := controller.NewController(r, clock)
 
 	_ = api.NewApi(c).StartServer()
 

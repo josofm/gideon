@@ -21,8 +21,8 @@ type Repository struct {
 
 func NewRepository() (*Repository, error) {
 	r := &Repository{}
-	ur := user.NewUserRepository()
-	dr := deck.NewDeckRepository()
+	ur := &user.UserRepository{}
+	dr := &deck.DeckRepository{}
 	pgUrl, err := pq.ParseURL(os.Getenv("ELEPHANTSQL_URL"))
 	if err != nil {
 		log.Print("Error parsing sql url")
