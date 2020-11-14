@@ -82,5 +82,5 @@ func TestShouldGetErrorWhenBodyIsWrong(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	assert.Nil(t, err, "Should be null!")
-	assert.Equal(t, http.StatusInternalServerError, rr.Code, "Status code Should be equal!")
+	assert.Equal(t, http.StatusNotFound, rr.Code, "Status code Should be equal!")
 }

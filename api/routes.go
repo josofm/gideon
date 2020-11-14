@@ -9,6 +9,7 @@ func (api *Api) routes() *mux.Router {
 
 	router.HandleFunc("/up", api.Up).Methods("GET")
 	router.HandleFunc("/login", api.login).Methods("POST")
+	router.HandleFunc("/register", api.register).Methods("POST")
 
 	return router
 }

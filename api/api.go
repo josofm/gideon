@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -15,6 +16,7 @@ type Api struct {
 
 type Controller interface {
 	Login(name, pass string) (map[string]interface{}, error)
+	CreateUser(user model.User) (string, error)
 }
 
 func NewApi(c Controller) *Api {
@@ -41,6 +43,7 @@ func (api *Api) Up(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *Api) login(w http.ResponseWriter, r *http.Request) {
+	log.Print("[login] trying login")
 	user := model.User{}
 
 	decoder := json.NewDecoder(r.Body)
@@ -51,11 +54,32 @@ func (api *Api) login(w http.ResponseWriter, r *http.Request) {
 	}
 	token, err := api.controller.Login(user.Email, user.Password)
 	if err != nil || (model.User{}) == user {
-		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
+		fmt.Println("ou aquiuiuiuiuiuiuui")
+		sendErrorMessage(w, http.StatusNotFound, "Invalid request - Invalid Credentials")
 
 	}
+	log.Print("[login] login ok")
 	send(w, http.StatusOK, token)
 
+}
+
+func (api *Api) register(w http.ResponseWriter, r *http.Request) {
+	log.Print("[register] trying register")
+	user := model.User{}
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&user)
+	if err != nil || (model.User{}) == user {
+		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
+	}
+
+	email, err := api.controller.CreateUser(user)
+	if err != nil {
+		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Name, sex, age, password and email are required")
+	}
+	message := fmt.Sprintf("Welcome %v", email)
+	log.Print("[register] register ok")
+	send(w, http.StatusOK, message)
 }
 
 func send(w http.ResponseWriter, code int, val interface{}) {

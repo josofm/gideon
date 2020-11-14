@@ -73,6 +73,10 @@ func (c *Controller) createToken(user model.User) (map[string]interface{}, error
 	return t, nil
 }
 
+func (c *Controller) CreateUser(user model.User) (string, error) {
+	return "", nil
+}
+
 // func (c Controller) GetDecks(db *sql.DB) http.HandlerFunc {
 // 	return func(w http.ResponseWriter, r *http.Request) {
 // 		var deck model.Deck
