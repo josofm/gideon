@@ -49,12 +49,11 @@ func (api *Api) login(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	err := decoder.Decode(&user)
-	if err != nil {
+	if err != nil || (model.User{}) == user {
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
 	}
 	token, err := api.controller.Login(user.Email, user.Password)
-	if err != nil || (model.User{}) == user {
-		fmt.Println("ou aquiuiuiuiuiuiuui")
+	if err != nil {
 		sendErrorMessage(w, http.StatusNotFound, "Invalid request - Invalid Credentials")
 
 	}

@@ -24,6 +24,7 @@ func setup(user model.User, err error) fixture {
 	r := &mock.RespositoryMock{}
 	r.User = user
 	r.Err = err
+	r.Email = user.Email
 
 	clock := &mock.ClockMock{}
 	clock.NowMock = time.Date(2009, 04, 30, 20, 34, 58, 651387237, time.UTC)
@@ -61,4 +62,46 @@ func TestShouldGetErrorWhenCantLogin(t *testing.T) {
 
 	assert.NotNil(t, err, "should be not nil!")
 	assert.Nil(t, token, "Should be nil!")
+}
+
+func TestShouldRegisterNewUserCorrectly(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, nil)
+	email, err := f.c.CreateUser(u)
+	assert.Nil(t, err, "should be nil!")
+	assert.Equal(t, u.Email, email, "Should be equal!")
+}
+
+func TestShouldGetErrorWhenMissingFields(t *testing.T) {
+	u := model.User{
+		Name: "jace belerem",
+		Sex:  "m",
+		Age:  "12",
+	}
+	f := setup(u, nil)
+	email, err := f.c.CreateUser(u)
+
+	assert.NotNil(t, err, "should be nil!")
+	assert.Equal(t, "", email, "Should be equal!")
+}
+
+func TestShouldGetErrorWhenRegisterError(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, errors.New("missing fields"))
+	email, err := f.c.CreateUser(u)
+
+	assert.NotNil(t, err, "should be nil!")
+	assert.Equal(t, "", email, "Should be equal!")
 }

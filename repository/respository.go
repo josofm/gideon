@@ -63,3 +63,12 @@ func (r *Repository) Login(email, pass string) (model.User, error) {
 	}
 	return r.user.Login(email, pass, r.dbPool)
 }
+
+func (r *Repository) CreateUser(user model.User) (string, error) {
+	err := r.connectDB()
+	if err != nil {
+		fmt.Println("no connection")
+		return "", err
+	}
+	return r.user.Create(user)
+}

@@ -27,3 +27,7 @@ func (u *UserRepository) Login(email, pass string, dbPool *sql.DB) (model.User, 
 
 	return user, nil
 }
+
+func (u *UserRepository) Create(user model.User) (string, error) {
+	return "", nil
+}
