@@ -70,5 +70,5 @@ func (r *Repository) CreateUser(user model.User) (string, error) {
 		fmt.Println("no connection")
 		return "", err
 	}
-	return r.user.Create(user)
+	return r.user.Create(user, r.dbPool)
 }

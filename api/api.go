@@ -55,10 +55,12 @@ func (api *Api) login(w http.ResponseWriter, r *http.Request) {
 	token, err := api.controller.Login(user.Email, user.Password)
 	if err != nil {
 		sendErrorMessage(w, http.StatusNotFound, "Invalid request - Invalid Credentials")
+		return
 
 	}
 	log.Print("[login] login ok")
 	send(w, http.StatusOK, token)
+	return
 
 }
 
@@ -73,12 +75,14 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email, err := api.controller.CreateUser(user)
-	if err != nil {
+	if err != nil { //validate kind of errors
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Name, sex, age, password and email are required")
+		return
 	}
 	message := fmt.Sprintf("Welcome %v", email)
 	log.Print("[register] register ok")
 	send(w, http.StatusOK, message)
+	return
 }
 
 func send(w http.ResponseWriter, code int, val interface{}) {
