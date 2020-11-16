@@ -1,3 +1,6 @@
-gideon:
-  volumes: 
-    -  ./:go/src/gideon
+version: "3"
+services:
+  gideon:
+    image: gideon:latest
+    volumes:
+      - .:/home/joso/workspace/projects/gideon

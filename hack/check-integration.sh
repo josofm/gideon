@@ -1,5 +1,7 @@
 #!/bin/bash
+
 sleep 5
+
 if [ $# -eq 0 ]
 then
     go test -tags integration -p 1 -covermode=atomic -timeout 50s ./...

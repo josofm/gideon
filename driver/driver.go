@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	//"commander-list/model"
 	"github.com/lib/pq"
 )
 

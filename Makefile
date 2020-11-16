@@ -38,17 +38,12 @@ check: modcache imagedev
 
 start-compose:
 	docker-compose pull --ignore-pull-failures
-	@ if [ "${ci}" = "true" ]; then \
-	    docker-compose up -d; \
-	else \
-		docker-compose -f docker-compose.yml up -d; \
-	fi
+	docker-compose -f docker-compose.yml up -d;
+
 check-integration: build start-compose
 	$(runcompose) --entrypoint "./hack/check-integration.sh $(workdir)/$(test)" gideon
-	@ if [ "${log}" != "debug" ]; then \
-		docker-compose kill; \
-		docker-compose rm -fv; \
-	fi
+		docker-compose kill; 
+		docker-compose rm -fv; 
 stop:
 	docker-compose kill
 	docker-compose rm -fv
