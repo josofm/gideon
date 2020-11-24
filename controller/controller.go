@@ -88,6 +88,15 @@ func (c *Controller) CreateUser(user model.User) (string, error) {
 	return email, nil
 }
 
+func (c *Controller) GetToken(header string) (model.Token, error) {
+	tk := model.Token{}
+
+	_, err := jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil
+	})
+	return model.Token{}, err
+}
+
 func userHasAllFields(user model.User) bool {
 	if user.Name == "" {
 		return false

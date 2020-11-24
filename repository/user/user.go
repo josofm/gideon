@@ -3,7 +3,6 @@ package user
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/josofm/gideon/model"
@@ -59,7 +58,6 @@ func (u *UserRepository) Create(user model.User, dbPool *sql.DB) (string, error)
 	insertStatment := `INSERT INTO "user" (name,sex,age,email,password) VALUES ($1, $2, $3, $4, $5) RETURNING id;`
 	err = dbPool.QueryRow(insertStatment, user.Name, user.Sex, user.Age, user.Email, user.Password).Scan(&user.ID)
 	if err != nil {
-		fmt.Println(err)
 		log.Print("[Create User] Fail database insertion")
 		return "", err
 	}

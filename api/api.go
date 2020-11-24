@@ -1,11 +1,14 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/josofm/gideon/model"
 )
 
@@ -17,6 +20,7 @@ type Api struct {
 type Controller interface {
 	Login(name, pass string) (map[string]interface{}, error)
 	CreateUser(user model.User) (string, error)
+	GetToken(header string) (model.Token, error)
 }
 
 func NewApi(c Controller) *Api {
@@ -83,6 +87,44 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 	log.Print("[register] register ok")
 	send(w, http.StatusOK, message)
 	return
+}
+
+func (api *Api) jwtVerify(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var header = r.Header.Get("access-token") //Grab the token from the header
+		header = strings.TrimSpace(header)
+		if header == "" {
+			log.Print("[jwtVerify] Token is missing, returns with error code 403 Unauthorized")
+			sendErrorMessage(w, http.StatusForbidden, "Missing auth token")
+			return
+		}
+		tk, err := api.controller.GetToken(header)
+		if err != nil {
+			log.Print("[jwtVerify] Token did not match, Unauthorized")
+			sendErrorMessage(w, http.StatusForbidden, "Unauthorized")
+			return
+		}
+		log.Print("[jwtVerify] token ok")
+		ctx := context.WithValue(r.Context(), "user", tk)
+		next.ServeHTTP(w, r.WithContext(ctx))
+
+	})
+
+}
+
+func (api *Api) getUser(w http.ResponseWriter, r *http.Request) {
+	log.Print("[getUser] trying get user")
+	vars := mux.Vars(r)
+	_, ok := vars["id"]
+	if !ok {
+		log.Print("[getUser] no id")
+		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
+	}
+	// user, err := api.controller.GetUser(id)
+	// if err != nil {
+	// 	sendErrorMessage(w, http.StatusNotFound, "User not found")
+	// }
+
 }
 
 func send(w http.ResponseWriter, code int, val interface{}) {
