@@ -91,6 +91,7 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 
 func (api *Api) jwtVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Print("[jwtVerify] triyng get token")
 		var header = r.Header.Get("access-token") //Grab the token from the header
 		header = strings.TrimSpace(header)
 		if header == "" {
@@ -106,6 +107,7 @@ func (api *Api) jwtVerify(next http.Handler) http.Handler {
 		}
 		log.Print("[jwtVerify] token ok")
 		ctx := context.WithValue(r.Context(), "user", tk)
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 
 	})
@@ -115,15 +117,32 @@ func (api *Api) jwtVerify(next http.Handler) http.Handler {
 func (api *Api) getUser(w http.ResponseWriter, r *http.Request) {
 	log.Print("[getUser] trying get user")
 	vars := mux.Vars(r)
-	_, ok := vars["id"]
+	id, ok := vars["id"]
 	if !ok {
 		log.Print("[getUser] no id")
 		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
 	}
-	// user, err := api.controller.GetUser(id)
-	// if err != nil {
-	// 	sendErrorMessage(w, http.StatusNotFound, "User not found")
-	// }
+
+	token, ok := r.Context().Value("user").(model.Token)
+	if !ok {
+		log.Print("[getUser] wrong user")
+		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
+	}
+	tokenIdString := fmt.Sprintf("%v", token.UserID)
+	if id != tokenIdString {
+		log.Print("[getUser] wrong user")
+		sendErrorMessage(w, http.StatusForbidden, "field not allowed")
+		return
+	}
+	user, err := api.controller.GetUser(id)
+	if err != nil {
+		log.Print("[getUser] user not found")
+		sendErrorMessage(w, http.StatusNotFound, "User not found")
+	}
+
+	log.Print("[getUser] User ok")
+	send(w, http.StatusOK, user)
+	return
 
 }
 

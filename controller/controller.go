@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -56,13 +57,15 @@ func (c *Controller) Login(email, pass string) (map[string]interface{}, error) {
 func (c *Controller) createToken(user model.User) (map[string]interface{}, error) {
 	expiresAt := c.clock.Now().Add(time.Minute * 100000).Unix()
 	tk := &model.Token{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
+		UserID: user.ID,
+		Name:   user.Name,
+		Email:  user.Email,
 		StandardClaims: &jwt.StandardClaims{
 			ExpiresAt: expiresAt,
 		},
 	}
+
+	fmt.Println(user.ID)
 
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, err := token.SignedString([]byte(c.secret))
@@ -89,12 +92,15 @@ func (c *Controller) CreateUser(user model.User) (string, error) {
 }
 
 func (c *Controller) GetToken(header string) (model.Token, error) {
-	tk := model.Token{}
+	tk := &model.Token{}
 
 	_, err := jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
-		return []byte("secret"), nil
+		return []byte(c.secret), nil
 	})
-	return model.Token{}, err
+	if err != nil {
+		return model.Token{}, err
+	}
+	return *tk, err
 }
 
 func userHasAllFields(user model.User) bool {
