@@ -3,6 +3,7 @@ package user
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/josofm/gideon/model"
@@ -63,4 +64,16 @@ func (u *UserRepository) Create(user model.User, dbPool *sql.DB) (string, error)
 	}
 
 	return user.Email, nil
+}
+
+func (u *UserRepository) Get(id float64, dbPool *sql.DB) (model.User, error) {
+	user := model.User{}
+	rows := dbPool.QueryRow(`select * from "user" as u where u.id=$1`, id)
+	fmt.Println(rows)
+	err := rows.Scan(&user.ID, &user.Name, &user.Sex, &user.Age, &user.Email, &user.Password)
+	if err != nil {
+		log.Print("[Get] User not found in database")
+		return model.User{}, err
+	}
+	return user, nil
 }

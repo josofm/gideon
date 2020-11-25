@@ -13,7 +13,7 @@ ARG USER
 ARG USER_ID
 ARG GROUP_ID
 
-EXPOSE 80
+EXPOSE 8080
 
 RUN groupadd -f --g ${GROUP_ID} ${USER} && \
     useradd -m -g ${GROUP_ID} -u ${USER_ID} ${USER} || echo "user already exists"

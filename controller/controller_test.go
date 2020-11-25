@@ -21,7 +21,7 @@ type fixture struct {
 
 func setup(user model.User, err error) fixture {
 	os.Setenv("SECRET_JWT", "generic_jwt_token")
-	r := &mock.RespositoryMock{}
+	r := &mock.RepositoryMock{}
 	r.User = user
 	r.Err = err
 	r.Email = user.Email
@@ -49,7 +49,7 @@ func TestShouldGetTokenLoginCorrectly(t *testing.T) {
 	f := setup(u, nil)
 	token, err := f.c.Login(u.Email, u.Password)
 	expectedToken := map[string]interface{}{
-		"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwiTmFtZSI6ImphY2UgYmVsZXJlbSIsIkVtYWlsIjoiamFjZUBtdGcuY29tIiwiZXhwIjoxMjQ3MTIzNjk4fQ.R2d8MZAeOVaX1Qs23UPoM5zHDd8YqNqAhc6y2G0Fvu8",
+		"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIk5hbWUiOiJqYWNlIGJlbGVyZW0iLCJFbWFpbCI6ImphY2VAbXRnLmNvbSIsImV4cCI6MTI0NzEyMzY5OH0.gcsOKKUBXeqrvPEoizoUL-Gk2BH38QT7EU4hM81XHJs",
 	}
 
 	assert.Nil(t, err, "should be nil!")

@@ -72,3 +72,12 @@ func (r *Repository) CreateUser(user model.User) (string, error) {
 	}
 	return r.user.Create(user, r.dbPool)
 }
+
+func (r *Repository) GetUser(id float64) (model.User, error) {
+	err := r.connectDB()
+	if err != nil {
+		fmt.Println("no connection")
+		return model.User{}, err
+	}
+	return r.user.Get(id, r.dbPool)
+}

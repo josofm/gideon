@@ -20,6 +20,7 @@ type Controller struct {
 type Repository interface {
 	Login(email, pass string) (model.User, error)
 	CreateUser(user model.User) (string, error)
+	GetUser(id float64) (model.User, error)
 }
 
 type TimeClock interface {
@@ -101,6 +102,16 @@ func (c *Controller) GetToken(header string) (model.Token, error) {
 		return model.Token{}, err
 	}
 	return *tk, err
+}
+
+func (c *Controller) GetUser(id float64) (model.User, error) {
+	var user model.User
+	user, err := c.repository.GetUser(id)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+
 }
 
 func userHasAllFields(user model.User) bool {

@@ -4,3 +4,5 @@ services:
     image: gideon:latest
     volumes:
       - .:/home/joso/workspace/projects/gideon
+    ports:
+    - 80
