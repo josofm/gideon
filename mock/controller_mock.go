@@ -9,6 +9,7 @@ type ControllerMock struct {
 	TokenModel model.Token
 	Email      string
 	Err        error
+	ErrGetUser error
 	User       model.User
 }
 
@@ -25,5 +26,5 @@ func (c *ControllerMock) GetToken(header string) (model.Token, error) {
 }
 
 func (c *ControllerMock) GetUser(id float64) (model.User, error) {
-	return c.User, c.Err
+	return c.User, c.ErrGetUser
 }

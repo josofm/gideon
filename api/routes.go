@@ -17,5 +17,7 @@ func (api *Api) routes() *mux.Router {
 	s.Use(api.jwtVerify)
 	s.HandleFunc("/user/{id}", api.getUser).Methods("GET")
 
+	//TO DO add admin route
+
 	return router
 }

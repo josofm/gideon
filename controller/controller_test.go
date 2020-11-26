@@ -27,7 +27,7 @@ func setup(user model.User, err error) fixture {
 	r.Email = user.Email
 
 	clock := &mock.ClockMock{}
-	clock.NowMock = time.Date(2009, 04, 30, 20, 34, 58, 651387237, time.UTC)
+	clock.NowMock = time.Date(2020, 04, 30, 20, 34, 58, 651387237, time.UTC)
 
 	c := controller.NewController(r, clock)
 
@@ -49,7 +49,7 @@ func TestShouldGetTokenLoginCorrectly(t *testing.T) {
 	f := setup(u, nil)
 	token, err := f.c.Login(u.Email, u.Password)
 	expectedToken := map[string]interface{}{
-		"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIk5hbWUiOiJqYWNlIGJlbGVyZW0iLCJFbWFpbCI6ImphY2VAbXRnLmNvbSIsImV4cCI6MTI0NzEyMzY5OH0.gcsOKKUBXeqrvPEoizoUL-Gk2BH38QT7EU4hM81XHJs",
+		"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIk5hbWUiOiJqYWNlIGJlbGVyZW0iLCJFbWFpbCI6ImphY2VAbXRnLmNvbSIsImV4cCI6MTU4ODI4MjQ5OH0.GZM0n5fECxhXZl-_r37q8tapS8i2xQIp_v9t6UoTcz0",
 	}
 
 	assert.Nil(t, err, "should be nil!")
@@ -104,4 +104,11 @@ func TestShouldGetErrorWhenRegisterError(t *testing.T) {
 
 	assert.NotNil(t, err, "should be nil!")
 	assert.Equal(t, "", email, "Should be equal!")
+}
+
+func TestShouldGetErrorWhenTryParseToken(t *testing.T) {
+	f := setup(model.User{}, nil)
+	tk, err := f.c.GetToken("tokenzeraWrong")
+	assert.NotNil(t, err, "should be nil!")
+	assert.Equal(t, model.Token{}, tk, "Should be equal!")
 }

@@ -107,6 +107,7 @@ func (api *Api) jwtVerify(next http.Handler) http.Handler {
 			return
 		}
 		log.Print("[jwtVerify] token ok")
+		fmt.Println(tk)
 		ctx := context.WithValue(r.Context(), "user", tk)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -126,7 +127,7 @@ func (api *Api) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token, ok := r.Context().Value("user").(model.Token)
-	if !ok {
+	if !ok || token == (model.Token{}) {
 		log.Print("[getUser] wrong user")
 		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
 		return

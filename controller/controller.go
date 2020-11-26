@@ -2,7 +2,6 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -56,7 +55,7 @@ func (c *Controller) Login(email, pass string) (map[string]interface{}, error) {
 }
 
 func (c *Controller) createToken(user model.User) (map[string]interface{}, error) {
-	expiresAt := c.clock.Now().Add(time.Minute * 100000).Unix()
+	expiresAt := c.clock.Now().Add(time.Hour * 1).Unix()
 	tk := &model.Token{
 		UserID: user.ID,
 		Name:   user.Name,
@@ -65,8 +64,6 @@ func (c *Controller) createToken(user model.User) (map[string]interface{}, error
 			ExpiresAt: expiresAt,
 		},
 	}
-
-	fmt.Println(user.ID)
 
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, err := token.SignedString([]byte(c.secret))
