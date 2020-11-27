@@ -112,3 +112,24 @@ func TestShouldGetErrorWhenTryParseToken(t *testing.T) {
 	assert.NotNil(t, err, "should be nil!")
 	assert.Equal(t, model.Token{}, tk, "Should be equal!")
 }
+
+func TestShouldGetErrorWhenTryGetUser(t *testing.T) {
+	f := setup(model.User{}, errors.New("User not found"))
+	user, err := f.c.GetUser(2)
+	assert.NotNil(t, err, "should be nil!")
+	assert.Equal(t, model.User{}, user, "Should be equal!")
+}
+
+func TestShouldGetUserCorrectly(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, nil)
+	user, err := f.c.GetUser(2)
+	assert.Nil(t, err, "should be nil!")
+	assert.Equal(t, u, user, "Should be equal!")
+}
