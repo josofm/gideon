@@ -37,16 +37,18 @@ check: modcache imagedev
 	docker run $(RUN_GO) ./hack/check.sh $(suite) $(test)
 
 start-compose:
+# 	docker build -t db -f ./mock/db/Dockerfile .
 	docker-compose pull --ignore-pull-failures
 	docker-compose -f docker-compose.yml up -d;
 
-check-integration: build start-compose
+check-integration: build stop start-compose
 	$(runcompose) --entrypoint "./hack/check-integration.sh $(workdir)/$(test)" gideon
 		docker-compose kill; 
 		docker-compose rm -fv; 
 stop:
 	docker-compose kill
 	docker-compose rm -fv
+
 coverage: modcache check
 	$(rundev) go tool cover -html=$(cov) -o=$(covhtml)
 	xdg-open coverage.html

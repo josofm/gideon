@@ -1,8 +1,24 @@
 version: "3"
 services:
+
+  db:
+    image: postgres
+    volumes:
+    - ./mock/db/:/docker-entrypoint-initdb.d/
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=teste
+      - POSTGRES_DB=gideondev
+    ports:
+    - "5432:5432"
+
   gideon:
     image: gideon:latest
+    depends_on:
+      - db
     volumes:
       - .:/home/joso/workspace/projects/gideon
     ports:
-    - 80
+      - "80:80"
+
+  
