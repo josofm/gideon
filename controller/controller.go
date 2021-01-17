@@ -19,6 +19,7 @@ type Controller struct {
 type Repository interface {
 	Login(email, pass string) (model.User, error)
 	CreateUser(user model.User) (string, error)
+	GetUser(id float64) (model.User, error)
 }
 
 type TimeClock interface {
@@ -54,11 +55,11 @@ func (c *Controller) Login(email, pass string) (map[string]interface{}, error) {
 }
 
 func (c *Controller) createToken(user model.User) (map[string]interface{}, error) {
-	expiresAt := c.clock.Now().Add(time.Minute * 100000).Unix()
+	expiresAt := c.clock.Now().Add(time.Hour * 1).Unix()
 	tk := &model.Token{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
+		UserID: user.ID,
+		Name:   user.Name,
+		Email:  user.Email,
 		StandardClaims: &jwt.StandardClaims{
 			ExpiresAt: expiresAt,
 		},
@@ -86,6 +87,28 @@ func (c *Controller) CreateUser(user model.User) (string, error) {
 	}
 
 	return email, nil
+}
+
+func (c *Controller) GetToken(header string) (model.Token, error) {
+	tk := &model.Token{}
+
+	_, err := jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
+		return []byte(c.secret), nil
+	})
+	if err != nil {
+		return model.Token{}, err
+	}
+	return *tk, err
+}
+
+func (c *Controller) GetUser(id float64) (model.User, error) {
+	var user model.User
+	user, err := c.repository.GetUser(id)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+
 }
 
 func userHasAllFields(user model.User) bool {

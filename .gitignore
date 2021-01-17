@@ -2,3 +2,5 @@ cmd/gideon/gideon
 .gomodcachedir
 .devimgbuild.logs
 .env
+coverage.html
+coverage.out

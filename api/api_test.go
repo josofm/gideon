@@ -14,35 +14,48 @@ import (
 	"github.com/josofm/gideon/api"
 	"github.com/josofm/gideon/mock"
 
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
+	"github.com/josofm/gideon/model"
 	"github.com/stretchr/testify/assert"
 )
 
 type fixture struct {
 	api *api.Api
+	r   *mux.Router
 }
 
-func setup(token map[string]interface{}, err error, email string) fixture {
-	c := &mock.ControllerMock{}
-	c.Token = token
-	c.Err = err
-	c.Email = email
+func setup(c *mock.ControllerMock) fixture {
 	api := api.NewApi(c)
+
+	router := mux.NewRouter().StrictSlash(true)
+	router.Use()
+	router.HandleFunc("/up", api.Up).Methods("GET")
+	router.HandleFunc("/login", api.Login).Methods("POST")
+	router.HandleFunc("/register", api.Register).Methods("POST")
+	s := router.PathPrefix("/auth").Subrouter()
+	s.Use(api.JwtVerify)
+	s.HandleFunc("/user/{id}", api.GetUser).Methods("GET")
 
 	return fixture{
 		api: api,
+		r:   router,
 	}
 
 }
 
 func TestUpAPI(t *testing.T) {
-	f := setup(nil, nil, "")
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.Err = nil
+	c.Email = ""
+	f := setup(c)
 
-	handler := http.HandlerFunc(f.api.Up)
 	r, err := http.NewRequest("GET", "/up", nil)
 
 	rr := httptest.NewRecorder()
 
-	handler.ServeHTTP(rr, r)
+	f.r.ServeHTTP(rr, r)
 
 	assert.Nil(t, err, "Should be null!")
 	assert.Equal(t, http.StatusOK, rr.Code, "Status code Should be equal!")
@@ -53,17 +66,19 @@ func TestShouldLoginCorrectly(t *testing.T) {
 	expectedJwt := map[string]interface{}{
 		"token": "tokenzera",
 	}
-
-	f := setup(expectedJwt, nil, "")
+	c := &mock.ControllerMock{}
+	c.Token = expectedJwt
+	c.Err = nil
+	c.Email = ""
+	f := setup(c)
 
 	body := []byte(`{"email": "gideon@mtg.com", "password": "ravnica"}`)
 
 	r, err := http.NewRequest("POST", "/login", bytes.NewBuffer(body))
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(f.api.Login)
 
-	handler.ServeHTTP(rr, r)
+	f.r.ServeHTTP(rr, r)
 
 	var actual map[string]interface{}
 	_ = json.Unmarshal(rr.Body.Bytes(), &actual)
@@ -75,28 +90,38 @@ func TestShouldLoginCorrectly(t *testing.T) {
 }
 
 func TestShouldGetErrorWhenBodyIsWrong(t *testing.T) {
-	f := setup(nil, nil, "")
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.Err = nil
+	c.Email = ""
+	f := setup(c)
+
 	body := []byte(`{"wrongField": "treta"}`)
 
 	r, err := http.NewRequest("POST", "/login", bytes.NewBuffer(body))
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(f.api.Login)
-	handler.ServeHTTP(rr, r)
+
+	f.r.ServeHTTP(rr, r)
 
 	assert.Nil(t, err, "Should be null!")
 	assert.Equal(t, http.StatusInternalServerError, rr.Code, "Status code Should be equal!")
 }
 
 func TestShouldGetErrorWhenInvalidCredentials(t *testing.T) {
-	f := setup(nil, errors.New("login invalid"), "")
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.Err = errors.New("login invalid")
+	c.Email = ""
+	f := setup(c)
+
 	body := []byte(`{"email": "gideon@mtg.com", "password": "ravnica"}`)
 
 	r, err := http.NewRequest("POST", "/login", bytes.NewBuffer(body))
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(f.api.Login)
-	handler.ServeHTTP(rr, r)
+
+	f.r.ServeHTTP(rr, r)
 
 	assert.Nil(t, err, "Should be null!")
 	assert.Equal(t, http.StatusNotFound, rr.Code, "Status code Should be equal!")
@@ -105,7 +130,12 @@ func TestShouldGetErrorWhenInvalidCredentials(t *testing.T) {
 func TestShouldRegisterNewUserCorrectly(t *testing.T) {
 	expectedEmail := "capeta@mtg.com"
 	ExpectedMessage := fmt.Sprintf("Welcome %v", expectedEmail)
-	f := setup(nil, nil, expectedEmail)
+
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.Err = nil
+	c.Email = expectedEmail
+	f := setup(c)
 	body := []byte(`
 		{
 			"name": "capeta da charneca",
@@ -117,8 +147,8 @@ func TestShouldRegisterNewUserCorrectly(t *testing.T) {
 	`)
 	r, err := http.NewRequest("POST", "/register", bytes.NewBuffer(body))
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(f.api.Register)
-	handler.ServeHTTP(rr, r)
+
+	f.r.ServeHTTP(rr, r)
 
 	var email string
 	_ = json.Unmarshal(rr.Body.Bytes(), &email)
@@ -130,20 +160,29 @@ func TestShouldRegisterNewUserCorrectly(t *testing.T) {
 }
 
 func TestShouldGetErrorToRegisterWhenUserInformWrongBody(t *testing.T) {
-	f := setup(nil, nil, "")
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.Err = nil
+	c.Email = ""
+	f := setup(c)
 	body := []byte(`{"wrongField": "treta"}`)
 
 	r, err := http.NewRequest("POST", "/register", bytes.NewBuffer(body))
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(f.api.Register)
-	handler.ServeHTTP(rr, r)
+
+	f.r.ServeHTTP(rr, r)
 
 	assert.Nil(t, err, "Should be null!")
 	assert.Equal(t, http.StatusInternalServerError, rr.Code, "Status code Should be equal!")
 }
 
 func TestShouldGetErrorToRegisterWhenUserInformFewValues(t *testing.T) {
-	f := setup(nil, errors.New("missing parameters"), "")
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.Err = errors.New("missing parameters")
+	c.Email = ""
+	f := setup(c)
+
 	body := []byte(`
 		{
 			"name": "capeta da charneca",
@@ -152,9 +191,134 @@ func TestShouldGetErrorToRegisterWhenUserInformFewValues(t *testing.T) {
 
 	r, err := http.NewRequest("POST", "/register", bytes.NewBuffer(body))
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(f.api.Register)
-	handler.ServeHTTP(rr, r)
+
+	f.r.ServeHTTP(rr, r)
 
 	assert.Nil(t, err, "Should be nil!")
 	assert.Equal(t, http.StatusInternalServerError, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldGetErrorWhenNotInformToken(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.Err = nil
+	c.Email = ""
+	f := setup(c)
+
+	body := []byte(`{"nottoken": ""}`)
+
+	r, err := http.NewRequest("GET", "/auth/user/32", bytes.NewBuffer(body))
+	rr := httptest.NewRecorder()
+
+	f.r.ServeHTTP(rr, r)
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusForbidden, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldGetErrorWhenCantParseTheToken(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.Err = errors.New("generic error")
+	c.Email = ""
+	f := setup(c)
+
+	body := []byte(``)
+	r, err := http.NewRequest("GET", "/auth/user/32", bytes.NewBuffer(body))
+	r.Header.Set("access-token", "humansoldier1/1")
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusForbidden, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldGetStatusForbiddenWhenTryGetUserWithDidNotmatchIds(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.ErrGetUser = nil
+	c.Email = ""
+	c.TokenModel = model.Token{
+		UserID: 1,
+		Name:   "capeta da charneca",
+		Email:  "swamp@house.com",
+		StandardClaims: &jwt.StandardClaims{
+			ExpiresAt: 15000,
+		},
+	}
+	f := setup(c)
+
+	body := []byte(``)
+	r, err := http.NewRequest("GET", "/auth/user/s", bytes.NewBuffer(body))
+	r.Header.Set("access-token", "humansoldier1/1")
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusForbidden, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldGetStatusForbiddenWhenTryGetUserWithNotValidParameter(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.ErrGetUser = errors.New("Error getting user")
+	c.Email = ""
+	c.TokenModel = model.Token{
+		UserID: 1,
+		Name:   "capeta da charneca",
+		Email:  "swamp@house.com",
+		StandardClaims: &jwt.StandardClaims{
+			ExpiresAt: 15000,
+		},
+	}
+	f := setup(c)
+
+	body := []byte(``)
+	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r.Header.Set("access-token", "humansoldier1/1")
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusNotFound, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldGetUserCorrectly(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.ErrGetUser = nil
+	c.Email = ""
+	c.TokenModel = model.Token{
+		UserID: 1,
+		Name:   "capeta da charneca",
+		Email:  "swamp@house.com",
+		StandardClaims: &jwt.StandardClaims{
+			ExpiresAt: 15000,
+		},
+	}
+	f := setup(c)
+
+	body := []byte(``)
+	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r.Header.Set("access-token", "humansoldier1/1")
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusOK, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldGetBadRequestWhenMalformedToken(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.ErrGetUser = nil
+	c.Email = ""
+
+	f := setup(c)
+	body := []byte(``)
+	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r.Header.Set("access-token", "humansoldier1/1")
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusBadRequest, rr.Code, "Status code Should be equal!")
 }

@@ -5,11 +5,19 @@ import (
 )
 
 func (api *Api) routes() *mux.Router {
-	router := mux.NewRouter()
+	router := mux.NewRouter().StrictSlash(true)
+	router.Use()
 
 	router.HandleFunc("/up", api.Up).Methods("GET")
 	router.HandleFunc("/login", api.login).Methods("POST")
 	router.HandleFunc("/register", api.register).Methods("POST")
+
+	//auth rote
+	s := router.PathPrefix("/auth").Subrouter()
+	s.Use(api.jwtVerify)
+	s.HandleFunc("/user/{id}", api.getUser).Methods("GET")
+
+	//TO DO add admin route
 
 	return router
 }

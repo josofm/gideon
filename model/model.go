@@ -25,9 +25,9 @@ type User struct {
 }
 
 type Token struct {
-	ID    float64
-	Name  string
-	Email string
+	UserID float64
+	Name   string
+	Email  string
 	*jwt.StandardClaims
 }
 

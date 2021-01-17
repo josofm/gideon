@@ -2,8 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
 	"os"
 
 	"github.com/josofm/gideon/model"
@@ -26,7 +24,6 @@ func NewRepository() (*Repository, error) {
 	dr := &deck.DeckRepository{}
 	pgUrl, err := pq.ParseURL(os.Getenv("ELEPHANTSQL_URL"))
 	if err != nil {
-		log.Print("Error parsing sql url")
 		return r, err
 	}
 	r.url = pgUrl
@@ -58,7 +55,6 @@ func (r *Repository) connectDB() error {
 func (r *Repository) Login(email, pass string) (model.User, error) {
 	err := r.connectDB()
 	if err != nil {
-		fmt.Println("no connection")
 		return model.User{}, err
 	}
 	return r.user.Login(email, pass, r.dbPool)
@@ -67,8 +63,15 @@ func (r *Repository) Login(email, pass string) (model.User, error) {
 func (r *Repository) CreateUser(user model.User) (string, error) {
 	err := r.connectDB()
 	if err != nil {
-		fmt.Println("no connection")
 		return "", err
 	}
 	return r.user.Create(user, r.dbPool)
+}
+
+func (r *Repository) GetUser(id float64) (model.User, error) {
+	err := r.connectDB()
+	if err != nil {
+		return model.User{}, err
+	}
+	return r.user.Get(id, r.dbPool)
 }

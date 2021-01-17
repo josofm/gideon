@@ -5,9 +5,12 @@ import (
 )
 
 type ControllerMock struct {
-	Token map[string]interface{}
-	Email string
-	Err   error
+	Token      map[string]interface{}
+	TokenModel model.Token
+	Email      string
+	Err        error
+	ErrGetUser error
+	User       model.User
 }
 
 func (c *ControllerMock) Login(name, pass string) (map[string]interface{}, error) {
@@ -16,4 +19,12 @@ func (c *ControllerMock) Login(name, pass string) (map[string]interface{}, error
 
 func (c *ControllerMock) CreateUser(user model.User) (string, error) {
 	return c.Email, c.Err
+}
+
+func (c *ControllerMock) GetToken(header string) (model.Token, error) {
+	return c.TokenModel, c.Err
+}
+
+func (c *ControllerMock) GetUser(id float64) (model.User, error) {
+	return c.User, c.ErrGetUser
 }

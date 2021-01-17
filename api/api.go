@@ -1,11 +1,14 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/josofm/gideon/model"
 )
 
@@ -17,6 +20,8 @@ type Api struct {
 type Controller interface {
 	Login(name, pass string) (map[string]interface{}, error)
 	CreateUser(user model.User) (string, error)
+	GetToken(header string) (model.Token, error)
+	GetUser(id float64) (model.User, error)
 }
 
 func NewApi(c Controller) *Api {
@@ -29,8 +34,8 @@ func NewApi(c Controller) *Api {
 func (api *Api) StartServer() error {
 	router := api.routes()
 
-	api.server = &http.Server{Addr: ":8000", Handler: router}
-	log.Print("Server is running at port 8000")
+	api.server = &http.Server{Addr: ":80", Handler: router}
+	log.Print("Server is running at port 80")
 
 	err := api.server.ListenAndServe()
 	return err
@@ -76,6 +81,10 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 
 	email, err := api.controller.CreateUser(user)
 	if err != nil { //validate kind of errors
+		if err.Error() == "User already Registred" {
+			sendErrorMessage(w, http.StatusConflict, "This user is already register in our system")
+			return
+		}
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Name, sex, age, password and email are required")
 		return
 	}
@@ -83,6 +92,65 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 	log.Print("[register] register ok")
 	send(w, http.StatusOK, message)
 	return
+}
+
+func (api *Api) jwtVerify(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Print("[jwtVerify] triyng get token")
+		var header = r.Header.Get("access-token") //Grab the token from the header
+		header = strings.TrimSpace(header)
+		if header == "" {
+			log.Print("[jwtVerify] Token is missing, returns with error code 403 Unauthorized")
+			sendErrorMessage(w, http.StatusForbidden, "Missing auth token")
+			return
+		}
+		tk, err := api.controller.GetToken(header)
+		if err != nil {
+			log.Print("[jwtVerify] Token did not match, Unauthorized")
+			sendErrorMessage(w, http.StatusForbidden, "Unauthorized")
+			return
+		}
+		log.Print("[jwtVerify] token ok")
+		ctx := context.WithValue(r.Context(), "user", tk)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+
+	})
+
+}
+
+func (api *Api) getUser(w http.ResponseWriter, r *http.Request) {
+	log.Print("[getUser] trying get user")
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		log.Print("[getUser] no id")
+		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
+		return
+	}
+
+	token, ok := r.Context().Value("user").(model.Token)
+	if !ok || token == (model.Token{}) {
+		log.Print("[getUser] wrong user")
+		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
+		return
+	}
+	tokenIdString := fmt.Sprintf("%v", token.UserID)
+	if id != tokenIdString {
+		log.Print("[getUser] wrong user")
+		sendErrorMessage(w, http.StatusForbidden, "field not allowed")
+		return
+	}
+	user, err := api.controller.GetUser(float64(token.UserID))
+	if err != nil {
+		log.Print("[getUser] user not found")
+		sendErrorMessage(w, http.StatusNotFound, "User not found")
+		return
+	}
+	log.Print("[getUser] User ok")
+	send(w, http.StatusOK, user)
+	return
+
 }
 
 func send(w http.ResponseWriter, code int, val interface{}) {
