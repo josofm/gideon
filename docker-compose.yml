@@ -1,6 +1,5 @@
 version: "3"
 services:
-
   db:
     image: postgres
     volumes:
@@ -11,6 +10,8 @@ services:
       - POSTGRES_DB=gideondev
     ports:
     - "5432:5432"
+    networks:
+      - some-network
 
   gideon:
     image: gideon:latest
@@ -20,5 +21,7 @@ services:
       - .:/home/joso/workspace/projects/gideon
     ports:
       - "80:80"
-
-  
+    networks:
+      - some-network
+networks: 
+  some-network:

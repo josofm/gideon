@@ -81,6 +81,10 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 
 	email, err := api.controller.CreateUser(user)
 	if err != nil { //validate kind of errors
+		if err.Error() == "User already Registred" {
+			sendErrorMessage(w, http.StatusConflict, "This user is already register in our system")
+			return
+		}
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Name, sex, age, password and email are required")
 		return
 	}
@@ -107,7 +111,6 @@ func (api *Api) jwtVerify(next http.Handler) http.Handler {
 			return
 		}
 		log.Print("[jwtVerify] token ok")
-		fmt.Println(tk)
 		ctx := context.WithValue(r.Context(), "user", tk)
 
 		next.ServeHTTP(w, r.WithContext(ctx))

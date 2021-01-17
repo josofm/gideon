@@ -4,7 +4,7 @@ package api_test
 
 import (
 	"bytes"
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"os"
 	"testing"
@@ -18,26 +18,34 @@ import (
 )
 
 const (
-	baseUrl = "http://localhost:80"
+	baseUrl               = "http://localhost:80"
+	RequestTimeoutSeconds = 180
 )
 
 type fixtureIntegration struct {
-	a *api.Api
+	a      *api.Api
+	client *http.Client
 }
 
+//TO DO teardowntest func to clean database and shutdown server
 func setupIntegration() fixtureIntegration {
 
-	os.Setenv("ELEPHANTSQL_URL", "postgres://postgres:teste@localhost:5432/gideondev")
+	os.Setenv("ELEPHANTSQL_URL", "postgres://postgres:teste@db:5432/gideondev?sslmode=disable")
+	os.Setenv("SECRET_JWT", "secret_token")
 
 	r, err := repository.NewRepository()
 	if err != nil {
 		panic(err)
 	}
+	timeout := time.Duration(time.Duration(RequestTimeoutSeconds) * time.Second)
+	cli := &http.Client{Timeout: timeout}
+
 	clock := &clock.TimeClock{}
 	c := controller.NewController(r, clock)
 	a := api.NewApi(c)
 	f := fixtureIntegration{
-		a: a,
+		a:      a,
+		client: cli,
 	}
 	go f.a.StartServer()
 	WaitServerUp()
@@ -57,15 +65,130 @@ func WaitServerUp() {
 	}
 }
 
-func TestWrong(t *testing.T) {
+func TestShouldLoginCorrectly(t *testing.T) {
 	_ = setupIntegration()
 	body := []byte(`{
 	    "email": "gideon@mtg.com",
 	    "password": "123change"
 	}`)
 	resp, err := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
-	fmt.Println(resp)
-	fmt.Println(err)
 
-	assert.True(t, false, "test")
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldGetNotFoundWhenLoginNotFound(t *testing.T) {
+	_ = setupIntegration()
+	body := []byte(`{
+	    "email": "yugi@bandai.com",
+	    "password": "123change"
+	}`)
+	resp, err := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldGetNotFoundPasswordNotMatches(t *testing.T) {
+	_ = setupIntegration()
+	body := []byte(`{
+	    "email": "gideon@mtg.com",
+	    "password": "123notchange"
+	}`)
+	resp, err := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
+
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldRegisterCorrectly(t *testing.T) {
+	_ = setupIntegration()
+	body := []byte(`{
+	    "email": "liliana@mtg.com",
+	    "password": "123change",
+	    "sex": "f",
+	    "age": "32",
+	    "name": "Liliana Vess"
+	}`)
+	resp, err := http.Post(baseUrl+"/register", "aplication/json", bytes.NewBuffer(body))
+
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
+}
+
+//In this case, is a sequential test
+func TestShouldGetErrorWhenEmailAlreadyRegister(t *testing.T) {
+	_ = setupIntegration()
+	body := []byte(`{
+	    "email": "gideon@mtg.com",
+	    "password": "123change",
+	    "sex": "m",
+	    "age": "32",
+	    "name": "Gideon Jura"
+	}`)
+	resp, err := http.Post(baseUrl+"/register", "aplication/json", bytes.NewBuffer(body))
+
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusConflict, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldGetErrorWhenReceiveAWrongBody(t *testing.T) {
+	_ = setupIntegration()
+	body := []byte(`{
+	    "email": "liliana@mtg.com",
+	    "age": "32",
+	    "name": "Liliana Vess"
+	}`)
+	resp, err := http.Post(baseUrl+"/register", "aplication/json", bytes.NewBuffer(body))
+
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldGetUserCorrectly(t *testing.T) {
+	f := setupIntegration()
+
+	body := []byte(`{
+	    "email": "gideon@mtg.com",
+	    "password": "123change"
+	}`)
+	loginRequest, err := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
+
+	var token map[string]interface{}
+	decoder := json.NewDecoder(loginRequest.Body)
+	err = decoder.Decode(&token)
+
+	r, err := http.NewRequest("GET", baseUrl+"/auth/user/1", nil)
+	r.Header.Add("access-token", token["token"].(string))
+	resp, err := f.client.Do(r)
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
+
+}
+
+func TestShouldGetForbiddenWhenUserIdDidNotMatches(t *testing.T) {
+	f := setupIntegration()
+
+	body := []byte(`{
+	    "email": "gideon@mtg.com",
+	    "password": "123change"
+	}`)
+	loginRequest, err := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
+
+	var token map[string]interface{}
+	decoder := json.NewDecoder(loginRequest.Body)
+	err = decoder.Decode(&token)
+
+	r, err := http.NewRequest("GET", baseUrl+"/auth/user/7", nil)
+	r.Header.Add("access-token", token["token"].(string))
+	resp, err := f.client.Do(r)
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
 }

@@ -41,7 +41,7 @@ start-compose:
 	docker-compose pull --ignore-pull-failures
 	docker-compose -f docker-compose.yml up -d;
 
-check-integration: build stop start-compose
+check-integration: build start-compose
 	$(runcompose) --entrypoint "./hack/check-integration.sh $(workdir)/$(test)" gideon
 		docker-compose kill; 
 		docker-compose rm -fv; 
