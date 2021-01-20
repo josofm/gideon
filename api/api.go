@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/gorilla/mux"
 	"github.com/josofm/gideon/model"
 )
@@ -22,6 +24,7 @@ type Controller interface {
 	CreateUser(user model.User) (string, error)
 	GetToken(header string) (model.Token, error)
 	GetUser(id float64) (model.User, error)
+	GetCardByName(name string) ([]*mtg.Card, error)
 }
 
 func NewApi(c Controller) *Api {
@@ -33,8 +36,12 @@ func NewApi(c Controller) *Api {
 
 func (api *Api) StartServer() error {
 	router := api.routes()
+	muxWithMiddlewares := http.TimeoutHandler(router, time.Second*30, "Timeout!")
 
-	api.server = &http.Server{Addr: ":80", Handler: router}
+	api.server = &http.Server{
+		Addr:    ":80",
+		Handler: muxWithMiddlewares,
+	}
 	log.Print("Server is running at port 80")
 
 	err := api.server.ListenAndServe()
@@ -149,6 +156,25 @@ func (api *Api) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("[getUser] User ok")
 	send(w, http.StatusOK, user)
+	return
+
+}
+
+func (api *Api) getCardByName(w http.ResponseWriter, r *http.Request) {
+	log.Print("[getCard] trying get card")
+	vars := mux.Vars(r)
+	cardName, ok := vars["name"]
+	if !ok {
+		log.Print("[getCard] no name")
+		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
+		return
+	}
+	cards, err := api.controller.GetCardByName(cardName)
+	if err != nil {
+		sendErrorMessage(w, http.StatusNotFound, "Card not found")
+		return
+	}
+	send(w, http.StatusOK, cards)
 	return
 
 }

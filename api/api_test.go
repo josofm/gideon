@@ -13,10 +13,11 @@ import (
 
 	"github.com/josofm/gideon/api"
 	"github.com/josofm/gideon/mock"
+	"github.com/josofm/gideon/model"
 
+	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
-	"github.com/josofm/gideon/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,6 +34,7 @@ func setup(c *mock.ControllerMock) fixture {
 	router.HandleFunc("/up", api.Up).Methods("GET")
 	router.HandleFunc("/login", api.Login).Methods("POST")
 	router.HandleFunc("/register", api.Register).Methods("POST")
+	router.HandleFunc("/card/{name}", api.GetCardByName).Methods("GET")
 	s := router.PathPrefix("/auth").Subrouter()
 	s.Use(api.JwtVerify)
 	s.HandleFunc("/user/{id}", api.GetUser).Methods("GET")
@@ -321,4 +323,25 @@ func TestShouldGetBadRequestWhenMalformedToken(t *testing.T) {
 
 	assert.Nil(t, err, "Should be nil!")
 	assert.Equal(t, http.StatusBadRequest, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldGetCardByIdCorrectly(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Cards = []*mtg.Card{
+		&mtg.Card{
+			Name: "Hogaak, Arisen Necropolis",
+		},
+	}
+	f := setup(c)
+	body := []byte(``)
+	r, err := http.NewRequest("GET", "/card/hoogak", bytes.NewBuffer(body))
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+
+	var cards []*mtg.Card
+	_ = json.Unmarshal(rr.Body.Bytes(), &cards)
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, len(c.Cards), len(cards), "Should be Equal!")
+	assert.Equal(t, http.StatusOK, rr.Code, "Status code Should be equal!")
 }

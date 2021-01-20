@@ -7,11 +7,20 @@ import (
 
 type Deck struct {
 	ID        float64 `json:"id,omitempty"`
-	Commander string  `json:"commander,omitempty"` //will be type car"d
-	//Commander mtg.Card `json:commander,omitempty`
-	//Owner     User   `json:owner,omitempty`
-	Owner string     `json:"owner,omitempty"` //will be type user
-	Cards []mtg.Card `json:"cards,omitempty"`
+	Commander Card    `json:commander,omitempty`
+	Owner     User    `json:owner,omitempty`
+	Cards     []Card  `json:"cards,omitempty"`
+}
+
+type Card struct {
+	Card  mtg.Card `json:"card,omitempty"`
+	Price Price    `json:"price, omitempty"`
+}
+
+type Price struct {
+	Minimun float64 `json:"minimun,omitempty"`
+	Average float64 `json:"average,omitempty"`
+	Maximum float64 `json:"maximun,omitempty"`
 }
 
 type User struct {
@@ -30,10 +39,3 @@ type Token struct {
 	Email  string
 	*jwt.StandardClaims
 }
-
-// UserID: user.ID,
-// 		Name:   user.Name,
-// 		Email:  user.Email,
-// 		StandardClaims: &jwt.StandardClaims{
-// 			ExpiresAt: expiresAt,
-// 		},

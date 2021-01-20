@@ -1,16 +1,19 @@
 package mock
 
 import (
+	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/josofm/gideon/model"
 )
 
 type ControllerMock struct {
-	Token      map[string]interface{}
-	TokenModel model.Token
-	Email      string
-	Err        error
-	ErrGetUser error
-	User       model.User
+	Token       map[string]interface{}
+	TokenModel  model.Token
+	Email       string
+	Err         error
+	ErrGetUser  error
+	User        model.User
+	Cards       []*mtg.Card
+	ErrGetCards error
 }
 
 func (c *ControllerMock) Login(name, pass string) (map[string]interface{}, error) {
@@ -27,4 +30,8 @@ func (c *ControllerMock) GetToken(header string) (model.Token, error) {
 
 func (c *ControllerMock) GetUser(id float64) (model.User, error) {
 	return c.User, c.ErrGetUser
+}
+
+func (c *ControllerMock) GetCardByName(name string) ([]*mtg.Card, error) {
+	return c.Cards, c.ErrGetCards
 }
