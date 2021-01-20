@@ -11,6 +11,7 @@ func (api *Api) routes() *mux.Router {
 	router.HandleFunc("/up", api.Up).Methods("GET")
 	router.HandleFunc("/login", api.login).Methods("POST")
 	router.HandleFunc("/register", api.register).Methods("POST")
+	router.HandleFunc("/card/{name}", api.getCardByName).Methods("GET")
 
 	//auth rote
 	s := router.PathPrefix("/auth").Subrouter()

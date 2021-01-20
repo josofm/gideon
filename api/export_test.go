@@ -14,6 +14,10 @@ func (api *Api) GetUser(w http.ResponseWriter, r *http.Request) {
 	api.getUser(w, r)
 }
 
+func (api *Api) GetCardByName(w http.ResponseWriter, r *http.Request) {
+	api.getCardByName(w, r)
+}
+
 func (api *Api) JwtVerify(next http.Handler) http.Handler {
 	return api.jwtVerify(next)
 }

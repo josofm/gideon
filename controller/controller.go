@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/josofm/gideon/model"
 )
@@ -108,7 +109,16 @@ func (c *Controller) GetUser(id float64) (model.User, error) {
 		return user, err
 	}
 	return user, nil
+}
 
+func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
+	var cards []*mtg.Card
+	q := mtg.NewQuery()
+	cards, err := q.Where("name", name).All()
+	if err != nil {
+		return cards, err
+	}
+	return cards, nil
 }
 
 func userHasAllFields(user model.User) bool {
