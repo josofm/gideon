@@ -7,6 +7,7 @@ import (
 
 type Deck struct {
 	ID        float64 `json:"id,omitempty"`
+	Name      string  `json:"name,omitempty"`
 	Commander Card    `json:commander,omitempty`
 	Owner     User    `json:owner,omitempty`
 	Cards     []Card  `json:"cards,omitempty"`

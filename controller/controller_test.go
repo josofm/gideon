@@ -133,3 +133,13 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 	assert.Nil(t, err, "should be nil!")
 	assert.Equal(t, u, user, "Should be equal!")
 }
+
+func TestShouldGetCardByNameCorrectly(t *testing.T) {
+	f := setup(model.User{}, nil)
+	cards, err := f.c.GetCardByName("hogaak")
+
+	expectedSize := 1
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, expectedSize, len(cards), "Should be Equal!")
+}

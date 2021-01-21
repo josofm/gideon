@@ -121,6 +121,10 @@ func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
 	return cards, nil
 }
 
+func (c *Controller) CreateDeck(deck model.Deck, userId float64) (string, error) {
+	return "", nil
+}
+
 func userHasAllFields(user model.User) bool {
 	if user.Name == "" {
 		return false

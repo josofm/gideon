@@ -17,6 +17,7 @@ func (api *Api) routes() *mux.Router {
 	s := router.PathPrefix("/auth").Subrouter()
 	s.Use(api.jwtVerify)
 	s.HandleFunc("/user/{id}", api.getUser).Methods("GET")
+	s.HandleFunc("/deck", api.addDeck).Methods("POST")
 
 	//TO DO add admin route
 

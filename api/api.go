@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
 
@@ -25,6 +26,7 @@ type Controller interface {
 	GetToken(header string) (model.Token, error)
 	GetUser(id float64) (model.User, error)
 	GetCardByName(name string) ([]*mtg.Card, error)
+	CreateDeck(deck model.Deck, userId float64) (string, error)
 }
 
 func NewApi(c Controller) *Api {
@@ -175,6 +177,32 @@ func (api *Api) getCardByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	send(w, http.StatusOK, cards)
+	return
+
+}
+
+func (api *Api) addDeck(w http.ResponseWriter, r *http.Request) {
+	log.Print("[addDeck] trying add deck")
+	deck := model.Deck{}
+
+	token, ok := r.Context().Value("user").(model.Token)
+	if !ok || token == (model.Token{}) {
+		log.Print("[getUser] wrong user")
+		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&deck)
+	if err != nil || reflect.DeepEqual(deck, model.Deck{}) {
+		log.Print("[addDeck] invalid token or body request")
+		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
+	}
+	deckName, err := api.controller.CreateDeck(deck, token.UserID)
+	if err != nil {
+		log.Print("[addDeck] problems saving deck")
+		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
+	}
+	send(w, http.StatusOK, deckName)
 	return
 
 }
