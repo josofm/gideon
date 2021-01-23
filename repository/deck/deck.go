@@ -1,50 +1,25 @@
 package deck
 
+import (
+	"database/sql"
+	"fmt"
+	"log"
+
+	"github.com/josofm/gideon/model"
+)
+
 type DeckRepository struct{}
 
-// func (d *DeckRepository) GetDecks(db *sql.DB, deck model.Deck, decks []model.Deck) ([]model.Deck, error) {
-
-// 	rows, err := db.Query("select * from decks")
-// 	if err != nil {
-// 		return []model.Deck{}, err
-// 	}
-
-// 	for rows.Next() {
-// 		err = rows.Scan(&deck.ID, &deck.Commander, &deck.Owner)
-
-// 		decks = append(decks, deck)
-// 	}
-
-// 	if err != nil {
-// 		return []model.Deck{}, err
-// 	}
-
-// 	return decks, nil
-
-// }
-
-// func (d *DeckRepository) GetDeck(db *sql.DB, deck model.Deck, id float64) (model.Deck, error) {
-// 	rows := db.QueryRow("select * from decks where id=$1", id)
-// 	err := rows.Scan(&deck.ID, &deck.Commander, &deck.Owner)
-
-// 	if err != nil {
-// 		return model.Deck{}, err
-// 	}
-
-// 	return deck, nil
-
-// }
-
-// func (d *DeckRepository) AddDeck(db *sql.DB, deck model.Deck) (float64, error) {
-// 	err := db.QueryRow("insert into decks (commander, owner) values ($1, $2) RETURNING id;",
-// 		deck.Commander, deck.Owner).Scan(&deck.ID)
-
-// 	if err != nil {
-// 		return 0, err
-// 	}
-
-// 	return deck.ID, nil
-// }
+func (d *DeckRepository) Create(deck model.Deck, dbPool *sql.DB) (string, error) {
+	insertStatment := `INSERT INTO "deck" (name, owner, commander, cards) VALUES ($1, $2, $3, $4) RETURNING id;`
+	err := dbPool.QueryRow(insertStatment, deck.Name, deck.Owner.ID, deck.Commander.Card.MultiverseId, deck.Cards[0].Card.MultiverseId).Scan(&deck.ID)
+	if err != nil {
+		fmt.Println(err)
+		log.Print("[Create Deck] Fail database insertion")
+		return "", err
+	}
+	return deck.Name, nil
+}
 
 // func (d *DeckRepository) UpdateDeck(db *sql.DB, deck model.Deck) (int64, error) {
 // 	result, err := db.Exec("update decks set owner=$1, commander=$2 where id=$3 RETURNING id",

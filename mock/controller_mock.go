@@ -14,6 +14,8 @@ type ControllerMock struct {
 	User        model.User
 	Cards       []*mtg.Card
 	ErrGetCards error
+	DeckName    string
+	ErrGetDeck  error
 }
 
 func (c *ControllerMock) Login(name, pass string) (map[string]interface{}, error) {
@@ -34,4 +36,8 @@ func (c *ControllerMock) GetUser(id float64) (model.User, error) {
 
 func (c *ControllerMock) GetCardByName(name string) ([]*mtg.Card, error) {
 	return c.Cards, c.ErrGetCards
+}
+
+func (c *ControllerMock) CreateDeck(deck model.Deck, userId float64) (string, error) {
+	return c.DeckName, c.ErrGetDeck
 }

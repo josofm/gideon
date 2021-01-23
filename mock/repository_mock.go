@@ -5,9 +5,10 @@ import (
 )
 
 type RepositoryMock struct {
-	User  model.User
-	Err   error
-	Email string
+	User     model.User
+	Err      error
+	Email    string
+	DeckName string
 }
 
 func (r *RepositoryMock) Login(email, pass string) (model.User, error) {
@@ -20,4 +21,8 @@ func (r *RepositoryMock) CreateUser(user model.User) (string, error) {
 
 func (r *RepositoryMock) GetUser(id float64) (model.User, error) {
 	return r.User, r.Err
+}
+
+func (r *RepositoryMock) CreateDeck(deck model.Deck) (string, error) {
+	return r.DeckName, r.Err
 }

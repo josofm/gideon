@@ -21,3 +21,7 @@ func (api *Api) GetCardByName(w http.ResponseWriter, r *http.Request) {
 func (api *Api) JwtVerify(next http.Handler) http.Handler {
 	return api.jwtVerify(next)
 }
+
+func (api *Api) AddDeck(w http.ResponseWriter, r *http.Request) {
+	api.addDeck(w, r)
+}

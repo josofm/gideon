@@ -11,13 +11,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/josofm/gideon/api"
-	"github.com/josofm/gideon/mock"
-	"github.com/josofm/gideon/model"
-
 	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"github.com/josofm/gideon/api"
+	"github.com/josofm/gideon/mock"
+	"github.com/josofm/gideon/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,6 +37,7 @@ func setup(c *mock.ControllerMock) fixture {
 	s := router.PathPrefix("/auth").Subrouter()
 	s.Use(api.JwtVerify)
 	s.HandleFunc("/user/{id}", api.GetUser).Methods("GET")
+	s.HandleFunc("/deck", api.AddDeck).Methods("POST")
 
 	return fixture{
 		api: api,
@@ -344,4 +344,108 @@ func TestShouldGetCardByIdCorrectly(t *testing.T) {
 	assert.Nil(t, err, "Should be nil!")
 	assert.Equal(t, len(c.Cards), len(cards), "Should be Equal!")
 	assert.Equal(t, http.StatusOK, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldInsertDeckCorrectly(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.ErrGetUser = nil
+	c.Email = ""
+	c.ErrGetDeck = nil
+	c.DeckName = "best deck"
+	c.TokenModel = model.Token{
+		UserID: 1,
+		Name:   "capeta da charneca",
+		Email:  "swamp@house.com",
+		StandardClaims: &jwt.StandardClaims{
+			ExpiresAt: 15000,
+		},
+	}
+	f := setup(c)
+	body := []byte(`{
+		"name": "best deck",
+		"commander": {
+			"card": {
+				"multiverseID": 389712
+			}
+		},
+		"cards": [
+			{
+				"card": {
+					"multiverseID": 194969
+				}
+			}
+		]
+	}`)
+	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r.Header.Set("access-token", "humansoldier1/1")
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusOK, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldGetErrorInsertingADeckWhenBodyDidNotHaveInformation(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.ErrGetUser = nil
+	c.Email = ""
+	c.TokenModel = model.Token{
+		UserID: 1,
+		Name:   "capeta da charneca",
+		Email:  "swamp@house.com",
+		StandardClaims: &jwt.StandardClaims{
+			ExpiresAt: 15000,
+		},
+	}
+	f := setup(c)
+	body := []byte(``)
+	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r.Header.Set("access-token", "humansoldier1/1")
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusInternalServerError, rr.Code, "Status code Should be equal!")
+}
+
+func TestShouldInsertDeckCorrectlyButGetErrorBecauseIsNotValidCommander(t *testing.T) {
+	c := &mock.ControllerMock{}
+	c.Token = nil
+	c.ErrGetUser = nil
+	c.Email = ""
+	c.ErrGetDeck = errors.New("A commander must be a legendary card")
+	c.DeckName = ""
+	c.TokenModel = model.Token{
+		UserID: 1,
+		Name:   "capeta da charneca",
+		Email:  "swamp@house.com",
+		StandardClaims: &jwt.StandardClaims{
+			ExpiresAt: 15000,
+		},
+	}
+	f := setup(c)
+	body := []byte(`{
+		"name": "best deck",
+		"commander": {
+			"card": {
+				"multiverseID": 409574
+			}
+		},
+		"cards": [
+			{
+				"card": {
+					"multiverseID": 194969
+				}
+			}
+		]
+	}`)
+	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r.Header.Set("access-token", "humansoldier1/1")
+	rr := httptest.NewRecorder()
+	f.r.ServeHTTP(rr, r)
+
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, http.StatusInternalServerError, rr.Code, "Status code Should be equal!")
 }
