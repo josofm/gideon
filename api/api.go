@@ -196,11 +196,17 @@ func (api *Api) addDeck(w http.ResponseWriter, r *http.Request) {
 	if err != nil || reflect.DeepEqual(deck, model.Deck{}) {
 		log.Print("[addDeck] invalid token or body request")
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
+		return
 	}
 	deckName, err := api.controller.CreateDeck(deck, token.UserID)
 	if err != nil {
 		log.Print("[addDeck] problems saving deck")
-		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
+		if err.Error() == "A commander must be a legendary card" {
+			sendErrorMessage(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		sendErrorMessage(w, http.StatusInternalServerError, "problems saving deck")
+		return
 	}
 	send(w, http.StatusOK, deckName)
 	return

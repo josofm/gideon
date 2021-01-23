@@ -75,3 +75,11 @@ func (r *Repository) GetUser(id float64) (model.User, error) {
 	}
 	return r.user.Get(id, r.dbPool)
 }
+
+func (r *Repository) CreateDeck(deck model.Deck) (string, error) {
+	err := r.connectDB()
+	if err != nil {
+		return "", err
+	}
+	return r.deck.Create(deck, r.dbPool)
+}
