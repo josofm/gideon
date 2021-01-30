@@ -10,4 +10,5 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/subosito/gotenv v1.2.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
+	gorm.io/gorm v1.20.11
 )

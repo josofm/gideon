@@ -7,12 +7,12 @@ import (
 
 	"github.com/josofm/gideon/model"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserRepository struct{}
 
-//TO DO use gorm
-func (u *UserRepository) Login(email, pass string, dbPool *sql.DB) (model.User, error) {
+func (u *UserRepository) Login(email, pass string, dbPool *gorm.DB) (model.User, error) {
 	user, err := u.getUserByEmail(email, dbPool)
 	if err != nil || (model.User{}) == user {
 		log.Print("[Login] email not found")
@@ -29,7 +29,7 @@ func (u *UserRepository) Login(email, pass string, dbPool *sql.DB) (model.User, 
 	return user, nil
 }
 
-func (u *UserRepository) getUserByEmail(email string, dbPool *sql.DB) (model.User, error) {
+func (u *UserRepository) getUserByEmail(email string, dbPool *gorm.DB) (model.User, error) {
 	user := model.User{}
 	rows := dbPool.QueryRow(`select * from "user" as u where u.email=$1`, email)
 	err := rows.Scan(&user.ID, &user.Name, &user.Sex, &user.Age, &user.Password, &user.Email)
@@ -39,7 +39,7 @@ func (u *UserRepository) getUserByEmail(email string, dbPool *sql.DB) (model.Use
 	return user, nil
 }
 
-func (u *UserRepository) Create(user model.User, dbPool *sql.DB) (string, error) {
+func (u *UserRepository) Create(user model.User, dbPool *gorm.DB) (string, error) {
 	_, err := u.getUserByEmail(user.Email, dbPool)
 	if err == nil {
 		log.Print("[Create] This user already exists")
@@ -65,7 +65,7 @@ func (u *UserRepository) Create(user model.User, dbPool *sql.DB) (string, error)
 	return user.Email, nil
 }
 
-func (u *UserRepository) Get(id float64, dbPool *sql.DB) (model.User, error) {
+func (u *UserRepository) Get(id float64, dbPool *gorm.DB) (model.User, error) {
 	user := model.User{}
 	rows := dbPool.QueryRow(`select * from "user" as u where u.id=$1`, id)
 	err := rows.Scan(&user.ID, &user.Name, &user.Sex, &user.Age, &user.Password, &user.Email)

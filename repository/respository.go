@@ -9,13 +9,14 @@ import (
 	"github.com/josofm/gideon/repository/user"
 
 	"github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
 type Repository struct {
 	url    string
 	user   *user.UserRepository
 	deck   *deck.DeckRepository
-	dbPool *sql.DB
+	dbPool *gotm.DB
 }
 
 func NewRepository() (*Repository, error) {
@@ -37,11 +38,14 @@ func (r *Repository) connectDB() error {
 	if r.dbPool != nil {
 		return nil
 	}
-
-	r.dbPool, err = sql.Open("postgres", r.url)
+	r.dbPool, err = gorm.Open(sql.Open("postgres", r.url), &gorm.Config{})
 	if err != nil {
-		return err
+		panic("failed to connect database")
 	}
+	// r.dbPool, err = sql.Open("postgres", r.url)
+	// if err != nil {
+	// 	return err
+	// }
 
 	err = r.dbPool.Ping()
 	if err != nil {

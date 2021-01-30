@@ -1,16 +1,16 @@
 package deck
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
 	"github.com/josofm/gideon/model"
+	"gorm.io/gorm"
 )
 
 type DeckRepository struct{}
 
-func (d *DeckRepository) Create(deck model.Deck, dbPool *sql.DB) (string, error) {
+func (d *DeckRepository) Create(deck model.Deck, dbPool *gorm.DB) (string, error) {
 	insertStatment := `INSERT INTO "deck" (name, owner, commander, cards) VALUES ($1, $2, $3, $4) RETURNING id;`
 	err := dbPool.QueryRow(insertStatment, deck.Name, deck.Owner.ID, deck.Commander.Card.MultiverseId, deck.Cards[0].Card.MultiverseId).Scan(&deck.ID)
 	if err != nil {
@@ -21,7 +21,7 @@ func (d *DeckRepository) Create(deck model.Deck, dbPool *sql.DB) (string, error)
 	return deck.Name, nil
 }
 
-// func (d *DeckRepository) UpdateDeck(db *sql.DB, deck model.Deck) (int64, error) {
+// func (d *DeckRepository) UpdateDeck(db *gorm.DB, deck model.Deck) (int64, error) {
 // 	result, err := db.Exec("update decks set owner=$1, commander=$2 where id=$3 RETURNING id",
 // 		&deck.Owner, &deck.Commander, &deck.ID)
 
@@ -38,7 +38,7 @@ func (d *DeckRepository) Create(deck model.Deck, dbPool *sql.DB) (string, error)
 // 	return rowsUpdated, nil
 // }
 
-// func (d *DeckRepository) RemoveDeck(db *sql.DB, id int) (int64, error) {
+// func (d *DeckRepository) RemoveDeck(db *gorm.DB, id int) (int64, error) {
 // 	result, err := db.Exec("delete from decks where id = $1", id)
 // 	if err != nil {
 // 		return 0, err
