@@ -328,7 +328,7 @@ func TestShouldGetBadRequestWhenMalformedToken(t *testing.T) {
 func TestShouldGetCardByIdCorrectly(t *testing.T) {
 	c := &mock.ControllerMock{}
 	c.Cards = []*mtg.Card{
-		&mtg.Card{
+		{
 			Name: "Hogaak, Arisen Necropolis",
 		},
 	}
