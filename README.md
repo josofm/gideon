@@ -1,6 +1,6 @@
 # GIDEON
 
-(https://themanabase.com/wp-content/uploads/2017/10/Gideon-Amonkhet-2-e1506932824569.jpg)
+![alt text](https://themanabase.com/wp-content/uploads/2017/10/Gideon-Amonkhet-2-e1506932824569.jpg)
 
 ## Api to manage mtg decks.
 
