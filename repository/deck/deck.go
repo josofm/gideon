@@ -1,7 +1,6 @@
 package deck
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/josofm/gideon/model"
@@ -11,14 +10,12 @@ import (
 type DeckRepository struct{}
 
 func (d *DeckRepository) Create(deck model.Deck, dbPool *gorm.DB) (string, error) {
-	insertStatment := `INSERT INTO "deck" (name, owner, commander, cards) VALUES ($1, $2, $3, $4) RETURNING id;`
-	err := dbPool.QueryRow(insertStatment, deck.Name, deck.Owner.ID, deck.Commander.Card.MultiverseId, deck.Cards[0].Card.MultiverseId).Scan(&deck.ID)
-	if err != nil {
-		fmt.Println(err)
+	if result := dbPool.Create(&deck); result.Error != nil {
 		log.Print("[Create Deck] Fail database insertion")
-		return "", err
+		return "", result.Error
 	}
 	return deck.Name, nil
+
 }
 
 // func (d *DeckRepository) UpdateDeck(db *gorm.DB, deck model.Deck) (int64, error) {

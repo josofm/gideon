@@ -24,9 +24,9 @@ type Controller interface {
 	Login(name, pass string) (map[string]interface{}, error)
 	CreateUser(user model.User) (string, error)
 	GetToken(header string) (model.Token, error)
-	GetUser(id float64) (model.User, error)
+	GetUser(id uint) (model.User, error)
 	GetCardByName(name string) ([]*mtg.Card, error)
-	CreateDeck(deck model.Deck, userId float64) (string, error)
+	CreateDeck(deck model.Deck, userId uint) (string, error)
 }
 
 func NewApi(c Controller) *Api {
@@ -150,7 +150,7 @@ func (api *Api) getUser(w http.ResponseWriter, r *http.Request) {
 		sendErrorMessage(w, http.StatusForbidden, "field not allowed")
 		return
 	}
-	user, err := api.controller.GetUser(float64(token.UserID))
+	user, err := api.controller.GetUser(uint(token.UserID))
 	if err != nil {
 		log.Print("[getUser] user not found")
 		sendErrorMessage(w, http.StatusNotFound, "User not found")
@@ -233,14 +233,3 @@ func sendErrorMessage(w http.ResponseWriter, code int, msg string) {
 	log.Printf("Error - %s", msg)
 	send(w, code, msg)
 }
-
-// router := mux.NewRouter()
-
-// router.HandleFunc("/decks", controller.GetDecks(db)).Methods("GET")
-// router.HandleFunc("/decks/{id}", controller.GetDeck(db)).Methods("GET")
-// router.HandleFunc("/decks", controller.AddDeck(db)).Methods("POST")
-// router.HandleFunc("/decks", controller.UpdateDeck(db)).Methods("PUT")
-// router.HandleFunc("/decks/{id}", controller.RemoveDeck(db)).Methods("DELETE")
-
-// fmt.Println("Server is running at port 8000")
-// log.Fatal(http.ListenAndServe(":8000", router))

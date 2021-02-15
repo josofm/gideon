@@ -21,7 +21,7 @@ type Controller struct {
 type Repository interface {
 	Login(email, pass string) (model.User, error)
 	CreateUser(user model.User) (string, error)
-	GetUser(id float64) (model.User, error)
+	GetUser(id uint) (model.User, error)
 	CreateDeck(deck model.Deck) (string, error)
 }
 
@@ -104,7 +104,7 @@ func (c *Controller) GetToken(header string) (model.Token, error) {
 	return *tk, err
 }
 
-func (c *Controller) GetUser(id float64) (model.User, error) {
+func (c *Controller) GetUser(id uint) (model.User, error) {
 	var user model.User
 	user, err := c.repository.GetUser(id)
 	if err != nil {
@@ -123,7 +123,7 @@ func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
 	return cards, nil
 }
 
-func (c *Controller) CreateDeck(deck model.Deck, userId float64) (string, error) {
+func (c *Controller) CreateDeck(deck model.Deck, userId uint) (string, error) {
 	deck.Owner.ID = userId
 	if !helper.IsValidCommander(deck.Commander.Card.MultiverseId) {
 		return "", errors.New("A commander must be a legendary card")

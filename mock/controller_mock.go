@@ -30,7 +30,7 @@ func (c *ControllerMock) GetToken(header string) (model.Token, error) {
 	return c.TokenModel, c.Err
 }
 
-func (c *ControllerMock) GetUser(id float64) (model.User, error) {
+func (c *ControllerMock) GetUser(id uint) (model.User, error) {
 	return c.User, c.ErrGetUser
 }
 
@@ -38,6 +38,6 @@ func (c *ControllerMock) GetCardByName(name string) ([]*mtg.Card, error) {
 	return c.Cards, c.ErrGetCards
 }
 
-func (c *ControllerMock) CreateDeck(deck model.Deck, userId float64) (string, error) {
+func (c *ControllerMock) CreateDeck(deck model.Deck, userId uint) (string, error) {
 	return c.DeckName, c.ErrGetDeck
 }

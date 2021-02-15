@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"database/sql"
 	"os"
+
+	"gorm.io/driver/postgres"
 
 	"github.com/josofm/gideon/model"
 	"github.com/josofm/gideon/repository/deck"
@@ -16,7 +17,7 @@ type Repository struct {
 	url    string
 	user   *user.UserRepository
 	deck   *deck.DeckRepository
-	dbPool *gotm.DB
+	dbPool *gorm.DB
 }
 
 func NewRepository() (*Repository, error) {
@@ -38,19 +39,15 @@ func (r *Repository) connectDB() error {
 	if r.dbPool != nil {
 		return nil
 	}
-	r.dbPool, err = gorm.Open(sql.Open("postgres", r.url), &gorm.Config{})
+
+	r.dbPool, err = gorm.Open(postgres.Open(r.url), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
-	// r.dbPool, err = sql.Open("postgres", r.url)
-	// if err != nil {
-	// 	return err
-	// }
-
-	err = r.dbPool.Ping()
-	if err != nil {
-		return err
-	}
+	r.dbPool.AutoMigrate(&model.User{})
+	r.dbPool.AutoMigrate(&model.Deck{})
+	r.dbPool.AutoMigrate(&model.Card{})
+	r.dbPool.AutoMigrate(&model.Price{})
 
 	return nil
 
@@ -72,7 +69,7 @@ func (r *Repository) CreateUser(user model.User) (string, error) {
 	return r.user.Create(user, r.dbPool)
 }
 
-func (r *Repository) GetUser(id float64) (model.User, error) {
+func (r *Repository) GetUser(id uint) (model.User, error) {
 	err := r.connectDB()
 	if err != nil {
 		return model.User{}, err

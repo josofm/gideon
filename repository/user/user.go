@@ -1,7 +1,6 @@
 package user
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 
@@ -31,10 +30,8 @@ func (u *UserRepository) Login(email, pass string, dbPool *gorm.DB) (model.User,
 
 func (u *UserRepository) getUserByEmail(email string, dbPool *gorm.DB) (model.User, error) {
 	user := model.User{}
-	rows := dbPool.QueryRow(`select * from "user" as u where u.email=$1`, email)
-	err := rows.Scan(&user.ID, &user.Name, &user.Sex, &user.Age, &user.Password, &user.Email)
-	if err != nil {
-		return model.User{}, err
+	if result := dbPool.Where("email = ?", email).First(&user); result.Error != nil {
+		return model.User{}, result.Error
 	}
 	return user, nil
 }
@@ -44,7 +41,7 @@ func (u *UserRepository) Create(user model.User, dbPool *gorm.DB) (string, error
 	if err == nil {
 		log.Print("[Create] This user already exists")
 		return "", errors.New("User already Registred")
-	} else if err != nil && err != sql.ErrNoRows {
+	} else if err != nil && err != gorm.ErrRecordNotFound {
 		log.Print("[Create] Some sql problem")
 		return "", err
 	}
@@ -55,23 +52,19 @@ func (u *UserRepository) Create(user model.User, dbPool *gorm.DB) (string, error
 		return "", err
 	}
 	user.Password = string(pass)
-	insertStatment := `INSERT INTO "user" (name,sex,age,email,password) VALUES ($1, $2, $3, $4, $5) RETURNING id;`
-	err = dbPool.QueryRow(insertStatment, user.Name, user.Sex, user.Age, user.Email, user.Password).Scan(&user.ID)
-	if err != nil {
+	if result := dbPool.Create(&user); result.Error != nil {
 		log.Print("[Create User] Fail database insertion")
-		return "", err
-	}
+		return "", result.Error
 
+	}
 	return user.Email, nil
 }
 
-func (u *UserRepository) Get(id float64, dbPool *gorm.DB) (model.User, error) {
+func (u *UserRepository) Get(id uint, dbPool *gorm.DB) (model.User, error) {
 	user := model.User{}
-	rows := dbPool.QueryRow(`select * from "user" as u where u.id=$1`, id)
-	err := rows.Scan(&user.ID, &user.Name, &user.Sex, &user.Age, &user.Password, &user.Email)
-	if err != nil {
+	if result := dbPool.Where("ID = ?", id).First(&user); result.Error != nil {
 		log.Print("[Get] User not found in database")
-		return model.User{}, err
+		return model.User{}, result.Error
 	}
 	return user, nil
 }
