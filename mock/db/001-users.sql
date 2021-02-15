@@ -1,6 +1,6 @@
 \c gideondev
 
-CREATE TABLE IF NOT EXISTS "user"
+CREATE TABLE IF NOT EXISTS "users"
 (
     id       serial  not null
         constraint "user_pkey"
@@ -9,8 +9,9 @@ CREATE TABLE IF NOT EXISTS "user"
     sex      varchar not null,
     age      varchar not null,
     password varchar not null,
-    email    varchar
+    email    varchar,
+    deleted_at date
 );
 
-INSERT INTO "user" ("name", "sex", "age", "password", "email") VALUES (
+INSERT INTO "users" ("name", "sex", "age", "password", "email") VALUES (
 		    'gideon jura', 'm','44','$2a$10$mU.3JaxIdQleWHKzubf.yO6n5Ulnizmbju/i73XkuaDTt5lO1fhEC', 'gideon@mtg.com');

@@ -40,7 +40,7 @@ func setup(user model.User, err error, deckName string) fixture {
 
 func TestShouldGetTokenLoginCorrectly(t *testing.T) {
 	u := model.User{
-		ID:       1.0,
+		ID:       1,
 		Name:     "jace belerem",
 		Sex:      "m",
 		Age:      "12",
