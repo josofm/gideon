@@ -25,3 +25,10 @@ func (api *Api) JwtVerify(next http.Handler) http.Handler {
 func (api *Api) AddDeck(w http.ResponseWriter, r *http.Request) {
 	api.addDeck(w, r)
 }
+
+func (api *Api) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	api.deleteUser(w, r)
+}
+func (api *Api) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	api.updateUser(w, r)
+}

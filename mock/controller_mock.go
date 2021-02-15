@@ -41,3 +41,11 @@ func (c *ControllerMock) GetCardByName(name string) ([]*mtg.Card, error) {
 func (c *ControllerMock) CreateDeck(deck model.Deck, userId uint) (string, error) {
 	return c.DeckName, c.ErrGetDeck
 }
+
+func (c *ControllerMock) DeleteUser(user model.User) error {
+	return c.Err
+}
+
+func (c *ControllerMock) UpdateUser(user model.User) error {
+	return c.Err
+}

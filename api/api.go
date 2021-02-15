@@ -27,6 +27,8 @@ type Controller interface {
 	GetUser(id uint) (model.User, error)
 	GetCardByName(name string) ([]*mtg.Card, error)
 	CreateDeck(deck model.Deck, userId uint) (string, error)
+	DeleteUser(user model.User) error
+	UpdateUser(user model.User) error
 }
 
 func NewApi(c Controller) *Api {
@@ -210,6 +212,13 @@ func (api *Api) addDeck(w http.ResponseWriter, r *http.Request) {
 	}
 	send(w, http.StatusOK, deckName)
 	return
+
+}
+
+func (api *Api) deleteUser(w http.ResponseWriter, r *http.Request) {
+
+}
+func (api *Api) updateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 

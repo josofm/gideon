@@ -23,6 +23,8 @@ type Repository interface {
 	CreateUser(user model.User) (string, error)
 	GetUser(id uint) (model.User, error)
 	CreateDeck(deck model.Deck) (string, error)
+	UpdateUser(user model.User) (model.User, error)
+	DeleteUser(user model.User) error
 }
 
 type TimeClock interface {
@@ -111,6 +113,14 @@ func (c *Controller) GetUser(id uint) (model.User, error) {
 		return user, err
 	}
 	return user, nil
+}
+
+func (c *Controller) DeleteUser(user model.User) error {
+
+}
+
+func (c *Controller) UpdateUser(user model.User) error {
+
 }
 
 func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
