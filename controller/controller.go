@@ -23,7 +23,7 @@ type Repository interface {
 	CreateUser(user model.User) (string, error)
 	GetUser(id uint) (model.User, error)
 	CreateDeck(deck model.Deck) (string, error)
-	UpdateUser(user model.User) (model.User, error)
+	UpdateUser(user model.User) error
 	DeleteUser(user model.User) error
 }
 
@@ -115,12 +115,17 @@ func (c *Controller) GetUser(id uint) (model.User, error) {
 	return user, nil
 }
 
-func (c *Controller) DeleteUser(user model.User) error {
-
+func (c *Controller) DeleteUser(id uint) error {
+	var user model.User
+	user, err := c.repository.GetUser(id)
+	if err != nil {
+		return err
+	}
+	return c.repository.DeleteUser(user)
 }
 
 func (c *Controller) UpdateUser(user model.User) error {
-
+	return nil
 }
 
 func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {

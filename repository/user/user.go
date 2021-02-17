@@ -69,9 +69,12 @@ func (u *UserRepository) Get(id uint, dbPool *gorm.DB) (model.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) Update(user model.User, dbPool *gorm.DB) (model.User, error) {
-	if result := dbPool.Update(&user); result.Error != nil {
-		return model.User{}, result.Error
+func (u *UserRepository) Update(user model.User, dbPool *gorm.DB) error {
+	if _, err := u.Get(user.ID, dbPool); err != nil {
+		return err
+	}
+	if result := dbPool.Save(&user); result.Error != nil {
+		return result.Error
 	}
 	return nil
 }

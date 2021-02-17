@@ -42,7 +42,7 @@ func (c *ControllerMock) CreateDeck(deck model.Deck, userId uint) (string, error
 	return c.DeckName, c.ErrGetDeck
 }
 
-func (c *ControllerMock) DeleteUser(user model.User) error {
+func (c *ControllerMock) DeleteUser(id uint) error {
 	return c.Err
 }
 

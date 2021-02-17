@@ -77,10 +77,10 @@ func (r *Repository) GetUser(id uint) (model.User, error) {
 	return r.user.Get(id, r.dbPool)
 }
 
-func (r *Repository) UpdateUser(user model.User) (model.User, error) {
+func (r *Repository) UpdateUser(user model.User) error {
 	err := r.connectDB()
 	if err != nil {
-		return model.User{}, err
+		return err
 	}
 	return r.user.Update(user, r.dbPool)
 }

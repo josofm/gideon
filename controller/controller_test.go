@@ -173,3 +173,16 @@ func TestShouldGetErrorCreatingADeckWhenCardisBanned(t *testing.T) {
 	assert.NotNil(t, err, "Should be nil!")
 	assert.Equal(t, expectedName, deckName, "Should be Equal!")
 }
+
+func TestShouldDeleteUserCorrectly(t *testing.T) {
+	expectedName := ""
+	f := setup(model.User{}, nil, expectedName)
+	err := f.c.DeleteUser(1)
+	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldGetErrorDeleteingUser(t *testing.T) {
+	f := setup(model.User{}, errors.New("User not found"), "")
+	err := f.c.DeleteUser(1)
+	assert.NotNil(t, err, "Should be not nil!")
+}

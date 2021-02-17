@@ -157,11 +157,7 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 	    "email": "gideon@mtg.com",
 	    "password": "123change"
 	}`)
-	loginRequest, err := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
-
-	var token map[string]interface{}
-	decoder := json.NewDecoder(loginRequest.Body)
-	err = decoder.Decode(&token)
+	token := loginTest(body)
 
 	r, err := http.NewRequest("GET", baseUrl+"/auth/user/1", nil)
 	r.Header.Add("access-token", token["token"].(string))
@@ -179,11 +175,7 @@ func TestShouldGetForbiddenWhenUserIdDidNotMatches(t *testing.T) {
 	    "email": "gideon@mtg.com",
 	    "password": "123change"
 	}`)
-	loginRequest, err := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
-
-	var token map[string]interface{}
-	decoder := json.NewDecoder(loginRequest.Body)
-	err = decoder.Decode(&token)
+	token := loginTest(body)
 
 	r, err := http.NewRequest("GET", baseUrl+"/auth/user/7", nil)
 	r.Header.Add("access-token", token["token"].(string))
@@ -191,4 +183,33 @@ func TestShouldGetForbiddenWhenUserIdDidNotMatches(t *testing.T) {
 	assert.NotNil(t, resp.Body, "Should be not nil!")
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode, "Should be equal!")
 	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldUpdateUserCorrectly(t *testing.T) {
+	f := setupIntegration()
+
+	body := []byte(`{
+	    "email": "tibalt@mtg.com",
+	    "password": "123change"
+	}`)
+
+	token := loginTest(body)
+	r, err := http.NewRequest("DELETE", baseUrl+"/auth/user/2", nil)
+	r.Header.Add("access-token", token["token"].(string))
+	resp, err := f.client.Do(r)
+
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Should be equal!")
+	assert.Nil(t, err, "Should be nil!")
+
+}
+
+func loginTest(body []byte) map[string]interface{} {
+	loginRequest, _ := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
+
+	var token map[string]interface{}
+	decoder := json.NewDecoder(loginRequest.Body)
+	_ = decoder.Decode(&token)
+
+	return token
 }

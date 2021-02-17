@@ -27,7 +27,7 @@ type Controller interface {
 	GetUser(id uint) (model.User, error)
 	GetCardByName(name string) ([]*mtg.Card, error)
 	CreateDeck(deck model.Deck, userId uint) (string, error)
-	DeleteUser(user model.User) error
+	DeleteUser(id uint) error
 	UpdateUser(user model.User) error
 }
 
@@ -89,6 +89,7 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 	if err != nil || (model.User{}) == user {
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
 	}
+	defer r.Body.Close()
 
 	email, err := api.controller.CreateUser(user)
 	if err != nil { //validate kind of errors
@@ -200,6 +201,7 @@ func (api *Api) addDeck(w http.ResponseWriter, r *http.Request) {
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
 		return
 	}
+	defer r.Body.Close()
 	deckName, err := api.controller.CreateDeck(deck, token.UserID)
 	if err != nil {
 		log.Print("[addDeck] problems saving deck")
@@ -216,9 +218,78 @@ func (api *Api) addDeck(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *Api) deleteUser(w http.ResponseWriter, r *http.Request) {
+	log.Print("[deleteUser] trying delete user")
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		log.Print("[deleteUser] no id")
+		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
+		return
+	}
+
+	token, ok := r.Context().Value("user").(model.Token)
+	if !ok || token == (model.Token{}) {
+		log.Print("[deleteUser] wrong user")
+		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
+		return
+	}
+	tokenIdString := fmt.Sprintf("%v", token.UserID)
+	if id != tokenIdString {
+		log.Print("[deleteUser] wrong user")
+		sendErrorMessage(w, http.StatusForbidden, "field not allowed")
+		return
+	}
+	err := api.controller.DeleteUser(uint(token.UserID))
+	if err != nil {
+		log.Print("[deleteUser] user not found")
+		sendErrorMessage(w, http.StatusNotFound, "User not found")
+		return
+	}
+	log.Print("[deleteUser] Delete user ok")
+	send(w, http.StatusOK, "User deleted")
+	return
 
 }
+
 func (api *Api) updateUser(w http.ResponseWriter, r *http.Request) {
+	log.Print("[updateUser] trying update user")
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		log.Print("[updateUser] no id")
+		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
+		return
+	}
+
+	token, ok := r.Context().Value("user").(model.Token)
+	if !ok || token == (model.Token{}) {
+		log.Print("[updateUser] wrong user")
+		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
+		return
+	}
+	tokenIdString := fmt.Sprintf("%v", token.UserID)
+	if id != tokenIdString {
+		log.Print("[updateUser] wrong user")
+		sendErrorMessage(w, http.StatusForbidden, "field not allowed")
+		return
+	}
+	var user model.User
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&user)
+	if err != nil || (model.User{}) == user {
+		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
+	}
+	defer r.Body.Close()
+
+	err = api.controller.UpdateUser(user)
+	if err != nil {
+		sendErrorMessage(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	log.Print("[updateUser] Delete user ok")
+	send(w, http.StatusOK, "User updated successfully")
+	return
 
 }
 
