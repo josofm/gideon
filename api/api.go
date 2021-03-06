@@ -169,6 +169,7 @@ func (api *Api) getCardByName(w http.ResponseWriter, r *http.Request) {
 	log.Print("[getCard] trying get card")
 	vars := mux.Vars(r)
 	cardName, ok := vars["name"]
+	fmt.Println("################## ", cardName)
 	if !ok {
 		log.Print("[getCard] no name")
 		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
@@ -281,13 +282,13 @@ func (api *Api) updateUser(w http.ResponseWriter, r *http.Request) {
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
 	}
 	defer r.Body.Close()
-
+	user.ID = uint(token.UserID)
 	err = api.controller.UpdateUser(user)
 	if err != nil {
 		sendErrorMessage(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	log.Print("[updateUser] Delete user ok")
+	log.Print("[updateUser] Update user ok")
 	send(w, http.StatusOK, "User updated successfully")
 	return
 

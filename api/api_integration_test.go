@@ -204,6 +204,14 @@ func TestShouldUpdateUserCorrectly(t *testing.T) {
 
 }
 
+func TestGetCardNameCorrectly(t *testing.T) {
+	f := setupIntegration()
+	r, err := http.NewRequest("GET", baseUrl+"/card/hogaak", nil)
+	resp, err := f.client.Do(r)
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Nil(t, err, "Should be nil!")
+}
+
 func loginTest(body []byte) map[string]interface{} {
 	loginRequest, _ := http.Post(baseUrl+"/login", "aplication/json", bytes.NewBuffer(body))
 

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -125,14 +126,19 @@ func (c *Controller) DeleteUser(id uint) error {
 }
 
 func (c *Controller) UpdateUser(user model.User) error {
+	if err := c.repository.UpdateUser(user); err != nil {
+		return err
+	}
 	return nil
 }
 
 func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
-	var cards []*mtg.Card
 	q := mtg.NewQuery()
-	cards, err := q.Where("name", name).All()
+	cards, err := q.Where(mtg.CardName, name).All()
+	fmt.Println("haduedae ", err)
+	fmt.Println(cards)
 	if err != nil {
+		fmt.Println("caindo aqui")
 		return cards, err
 	}
 	return cards, nil
