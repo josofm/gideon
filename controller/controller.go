@@ -2,7 +2,6 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -135,10 +134,7 @@ func (c *Controller) UpdateUser(user model.User) error {
 func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
 	q := mtg.NewQuery()
 	cards, err := q.Where(mtg.CardName, name).All()
-	fmt.Println("haduedae ", err)
-	fmt.Println(cards)
 	if err != nil {
-		fmt.Println("caindo aqui")
 		return cards, err
 	}
 	return cards, nil

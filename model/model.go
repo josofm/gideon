@@ -24,9 +24,9 @@ type Deck struct {
 
 type Card struct {
 	gorm.Model
-	ID        uint     `gorm:"primaryKey" json:"id,omitempty`
-	Card      mtg.Card `json:"card,omitempty"`
-	Price     Price    `json:"price,omitempty"`
+	ID        mtg.MultiverseId `gorm:"primaryKey"`
+	Card      mtg.Card         `json:"card,omitempty"`
+	Price     Price            `json:"price, omitempty"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
