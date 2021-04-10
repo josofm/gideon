@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/josofm/gideon/model"
+	"github.com/josofm/mtg-sdk-go"
 )
 
 type ControllerMock struct {

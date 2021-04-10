@@ -1,9 +1,10 @@
 package helper
 
 import (
+	"fmt"
 	"strings"
 
-	"github.com/MagicTheGathering/mtg-sdk-go"
+	"github.com/josofm/mtg-sdk-go"
 )
 
 func IsBanned(card *mtg.Card, format string) bool {
@@ -17,6 +18,8 @@ func IsBanned(card *mtg.Card, format string) bool {
 
 func IsValidCommander(multiverseID mtg.MultiverseId) bool {
 	card, err := mtg.MultiverseId(multiverseID).Fetch()
+	fmt.Println(err)
+	fmt.Println(card)
 	if err != nil {
 		return false
 	}

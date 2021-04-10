@@ -3,6 +3,7 @@
 package controller_test
 
 import (
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -10,7 +11,7 @@ import (
 	"github.com/josofm/gideon/controller"
 	"github.com/josofm/gideon/mock"
 	"github.com/josofm/gideon/model"
-
+	"github.com/josofm/mtg-sdk-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,102 +38,102 @@ func setup(user model.User, err error, deckName string) fixture {
 
 }
 
-// func TestShouldGetTokenLoginCorrectly(t *testing.T) {
-// 	u := model.User{
-// 		ID:       1,
-// 		Name:     "jace belerem",
-// 		Sex:      "m",
-// 		Age:      "12",
-// 		Email:    "jace@mtg.com",
-// 		Password: "$3dsfTrcsa",
-// 	}
-// 	f := setup(u, nil, "")
-// 	token, err := f.c.Login(u.Email, u.Password)
-// 	expectedToken := map[string]interface{}{
-// 		"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIk5hbWUiOiJqYWNlIGJlbGVyZW0iLCJFbWFpbCI6ImphY2VAbXRnLmNvbSIsImV4cCI6MTU4ODI4MjQ5OH0.GZM0n5fECxhXZl-_r37q8tapS8i2xQIp_v9t6UoTcz0",
-// 	}
+func TestShouldGetTokenLoginCorrectly(t *testing.T) {
+	u := model.User{
+		ID:       1,
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, nil, "")
+	token, err := f.c.Login(u.Email, u.Password)
+	expectedToken := map[string]interface{}{
+		"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIk5hbWUiOiJqYWNlIGJlbGVyZW0iLCJFbWFpbCI6ImphY2VAbXRnLmNvbSIsImV4cCI6MTU4ODI4MjQ5OH0.GZM0n5fECxhXZl-_r37q8tapS8i2xQIp_v9t6UoTcz0",
+	}
 
-// 	assert.Nil(t, err, "should be nil!")
-// 	assert.Equal(t, expectedToken, token, "Should be equal!")
-// }
+	assert.Nil(t, err, "should be nil!")
+	assert.Equal(t, expectedToken, token, "Should be equal!")
+}
 
-// func TestShouldGetErrorWhenCantLogin(t *testing.T) {
-// 	f := setup(model.User{}, errors.New("Invalid Credentials"), "")
-// 	token, err := f.c.Login("ComboPlayer@mtg.com", "123Change")
+func TestShouldGetErrorWhenCantLogin(t *testing.T) {
+	f := setup(model.User{}, errors.New("Invalid Credentials"), "")
+	token, err := f.c.Login("ComboPlayer@mtg.com", "123Change")
 
-// 	assert.NotNil(t, err, "should be not nil!")
-// 	assert.Nil(t, token, "Should be nil!")
-// }
+	assert.NotNil(t, err, "should be not nil!")
+	assert.Nil(t, token, "Should be nil!")
+}
 
-// func TestShouldRegisterNewUserCorrectly(t *testing.T) {
-// 	u := model.User{
-// 		Name:     "jace belerem",
-// 		Sex:      "m",
-// 		Age:      "12",
-// 		Email:    "jace@mtg.com",
-// 		Password: "$3dsfTrcsa",
-// 	}
-// 	f := setup(u, nil, "")
-// 	email, err := f.c.CreateUser(u)
-// 	assert.Nil(t, err, "should be nil!")
-// 	assert.Equal(t, u.Email, email, "Should be equal!")
-// }
+func TestShouldRegisterNewUserCorrectly(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, nil, "")
+	email, err := f.c.CreateUser(u)
+	assert.Nil(t, err, "should be nil!")
+	assert.Equal(t, u.Email, email, "Should be equal!")
+}
 
-// func TestShouldGetErrorWhenMissingFields(t *testing.T) {
-// 	u := model.User{
-// 		Name: "jace belerem",
-// 		Sex:  "m",
-// 		Age:  "12",
-// 	}
-// 	f := setup(u, nil, "")
-// 	email, err := f.c.CreateUser(u)
+func TestShouldGetErrorWhenMissingFields(t *testing.T) {
+	u := model.User{
+		Name: "jace belerem",
+		Sex:  "m",
+		Age:  "12",
+	}
+	f := setup(u, nil, "")
+	email, err := f.c.CreateUser(u)
 
-// 	assert.NotNil(t, err, "should be nil!")
-// 	assert.Equal(t, "", email, "Should be equal!")
-// }
+	assert.NotNil(t, err, "should be nil!")
+	assert.Equal(t, "", email, "Should be equal!")
+}
 
-// func TestShouldGetErrorWhenRegisterError(t *testing.T) {
-// 	u := model.User{
-// 		Name:     "jace belerem",
-// 		Sex:      "m",
-// 		Age:      "12",
-// 		Email:    "jace@mtg.com",
-// 		Password: "$3dsfTrcsa",
-// 	}
-// 	f := setup(u, errors.New("missing fields"), "")
-// 	email, err := f.c.CreateUser(u)
+func TestShouldGetErrorWhenRegisterError(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, errors.New("missing fields"), "")
+	email, err := f.c.CreateUser(u)
 
-// 	assert.NotNil(t, err, "should be nil!")
-// 	assert.Equal(t, "", email, "Should be equal!")
-// }
+	assert.NotNil(t, err, "should be nil!")
+	assert.Equal(t, "", email, "Should be equal!")
+}
 
-// func TestShouldGetErrorWhenTryParseToken(t *testing.T) {
-// 	f := setup(model.User{}, nil, "")
-// 	tk, err := f.c.GetToken("tokenzeraWrong")
-// 	assert.NotNil(t, err, "should be nil!")
-// 	assert.Equal(t, model.Token{}, tk, "Should be equal!")
-// }
+func TestShouldGetErrorWhenTryParseToken(t *testing.T) {
+	f := setup(model.User{}, nil, "")
+	tk, err := f.c.GetToken("tokenzeraWrong")
+	assert.NotNil(t, err, "should be nil!")
+	assert.Equal(t, model.Token{}, tk, "Should be equal!")
+}
 
-// func TestShouldGetErrorWhenTryGetUser(t *testing.T) {
-// 	f := setup(model.User{}, errors.New("User not found"), "")
-// 	user, err := f.c.GetUser(2)
-// 	assert.NotNil(t, err, "should be nil!")
-// 	assert.Equal(t, model.User{}, user, "Should be equal!")
-// }
+func TestShouldGetErrorWhenTryGetUser(t *testing.T) {
+	f := setup(model.User{}, errors.New("User not found"), "")
+	user, err := f.c.GetUser(2)
+	assert.NotNil(t, err, "should be nil!")
+	assert.Equal(t, model.User{}, user, "Should be equal!")
+}
 
-// func TestShouldGetUserCorrectly(t *testing.T) {
-// 	u := model.User{
-// 		Name:     "jace belerem",
-// 		Sex:      "m",
-// 		Age:      "12",
-// 		Email:    "jace@mtg.com",
-// 		Password: "$3dsfTrcsa",
-// 	}
-// 	f := setup(u, nil, "")
-// 	user, err := f.c.GetUser(2)
-// 	assert.Nil(t, err, "should be nil!")
-// 	assert.Equal(t, u, user, "Should be equal!")
-// }
+func TestShouldGetUserCorrectly(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, nil, "")
+	user, err := f.c.GetUser(2)
+	assert.Nil(t, err, "should be nil!")
+	assert.Equal(t, u, user, "Should be equal!")
+}
 
 func TestShouldGetCardByNameCorrectly(t *testing.T) {
 	f := setup(model.User{}, nil, "")
@@ -153,35 +154,42 @@ func TestShouldCreateDeckCorrectly(t *testing.T) {
 	assert.Equal(t, expectedName, deckName, "Should be Equal!")
 }
 
-// func TestShouldGetErrorCreatingADeckWhenCardCantBeCommander(t *testing.T) {
-// 	expectedName := ""
-// 	f := setup(model.User{}, nil, expectedName)
-// 	deck := mock.GetBasicDeck()
-// 	deck.Commander.Card.MultiverseId = 409574
-// 	deckName, err := f.c.CreateDeck(deck, 1)
-// 	assert.NotNil(t, err, "Should be nil!")
-// 	assert.Equal(t, expectedName, deckName, "Should be Equal!")
-// }
+func TestGetCardByID(t *testing.T) {
+	card, err := mtg.MultiverseId("464151").Fetch()
+	expectedCardName := "Hogaak, Arisen Necropolis"
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, card.Name, expectedCardName, "Should be nil!")
+}
 
-// func TestShouldGetErrorCreatingADeckWhenCardisBanned(t *testing.T) {
-// 	expectedName := ""
-// 	f := setup(model.User{}, nil, expectedName)
-// 	deck := mock.GetBasicDeck()
-// 	deck.Commander.Card.MultiverseId = 425897
-// 	deckName, err := f.c.CreateDeck(deck, 1)
-// 	assert.NotNil(t, err, "Should be nil!")
-// 	assert.Equal(t, expectedName, deckName, "Should be Equal!")
-// }
+func TestShouldGetErrorCreatingADeckWhenCardCantBeCommander(t *testing.T) {
+	expectedName := ""
+	f := setup(model.User{}, nil, expectedName)
+	deck := mock.GetBasicDeck()
+	deck.Commander.Card.MultiverseId = "409574"
+	deckName, err := f.c.CreateDeck(deck, 1)
+	assert.NotNil(t, err, "Should be nil!")
+	assert.Equal(t, expectedName, deckName, "Should be Equal!")
+}
 
-// func TestShouldDeleteUserCorrectly(t *testing.T) {
-// 	expectedName := ""
-// 	f := setup(model.User{}, nil, expectedName)
-// 	err := f.c.DeleteUser(1)
-// 	assert.Nil(t, err, "Should be nil!")
-// }
+func TestShouldGetErrorCreatingADeckWhenCardisBanned(t *testing.T) {
+	expectedName := ""
+	f := setup(model.User{}, nil, expectedName)
+	deck := mock.GetBasicDeck()
+	deck.Commander.Card.MultiverseId = "425897"
+	deckName, err := f.c.CreateDeck(deck, 1)
+	assert.NotNil(t, err, "Should be nil!")
+	assert.Equal(t, expectedName, deckName, "Should be Equal!")
+}
 
-// func TestShouldGetErrorDeleteingUser(t *testing.T) {
-// 	f := setup(model.User{}, errors.New("User not found"), "")
-// 	err := f.c.DeleteUser(1)
-// 	assert.NotNil(t, err, "Should be not nil!")
-// }
+func TestShouldDeleteUserCorrectly(t *testing.T) {
+	expectedName := ""
+	f := setup(model.User{}, nil, expectedName)
+	err := f.c.DeleteUser(1)
+	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldGetErrorDeleteingUser(t *testing.T) {
+	f := setup(model.User{}, errors.New("User not found"), "")
+	err := f.c.DeleteUser(1)
+	assert.NotNil(t, err, "Should be not nil!")
+}

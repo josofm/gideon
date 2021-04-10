@@ -3,7 +3,7 @@ package mock
 import (
 	"github.com/josofm/gideon/model"
 
-	"github.com/MagicTheGathering/mtg-sdk-go"
+	"github.com/josofm/mtg-sdk-go"
 )
 
 func GetBasicDeck() model.Deck {
@@ -11,13 +11,13 @@ func GetBasicDeck() model.Deck {
 		Name: "best deck",
 		Commander: model.Card{
 			Card: mtg.Card{
-				MultiverseId: 389712,
+				MultiverseId: "389712",
 			},
 		},
 		Cards: []model.Card{
 			{
 				Card: mtg.Card{
-					MultiverseId: 409574,
+					MultiverseId: "409574",
 				},
 			},
 		},

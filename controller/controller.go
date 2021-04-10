@@ -2,14 +2,15 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/josofm/gideon/helper"
 	"github.com/josofm/gideon/model"
+	"github.com/josofm/mtg-sdk-go"
 )
 
 type Controller struct {
@@ -135,6 +136,8 @@ func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
 	q := mtg.NewQuery()
 	cards, err := q.Where(mtg.CardName, name).All()
 	if err != nil {
+		fmt.Println("jajajja ", cards)
+		fmt.Println("aaeh ", err)
 		return cards, err
 	}
 	return cards, nil

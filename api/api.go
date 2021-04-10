@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/gorilla/mux"
 	"github.com/josofm/gideon/model"
+	"github.com/josofm/mtg-sdk-go"
 )
 
 type Api struct {
@@ -169,7 +169,6 @@ func (api *Api) getCardByName(w http.ResponseWriter, r *http.Request) {
 	log.Print("[getCard] trying get card")
 	vars := mux.Vars(r)
 	cardName, ok := vars["name"]
-	fmt.Println("################## ", cardName)
 	if !ok {
 		log.Print("[getCard] no name")
 		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
