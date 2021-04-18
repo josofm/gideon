@@ -1,4 +1,6 @@
 # GIDEON
+[![Build Status](https://api.travis-ci.com/josofm/gideon.svg?branch=main)](https://travis-ci.com/github/josofm/gideon)
+[![Go Report Card](https://goreportcard.com/badge/github.com/josofm/gideon)](https://goreportcard.com/report/github.com/josofm/gideon)
 
 ![alt text](https://themanabase.com/wp-content/uploads/2017/10/Gideon-Amonkhet-2-e1506932824569.jpg)
 
