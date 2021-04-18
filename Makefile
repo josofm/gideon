@@ -1,16 +1,11 @@
-SERVICE_NAME := gideon
-version?=latest
 img=gideon
-uid=$(shell id -u $$USER)
-gid=$(shell id -g $$USER)
+version?=latest
 wd=$(shell pwd)
 appvol=$(wd):/app
 modcachedir=$(wd)/.gomodcachedir
 cachevol=$(modcachedir):/go/pkg/mod
 rundev=docker run --rm -v $(appvol) -v $(cachevol) $(img)
-runbuild=docker run --rm -e CGO_ENABLED=0 -e GOOS=linux -e GOARCH=amd64 -v $(appvol) -v $(cachevol) $(SERVICE_NAME)
-SOURCE_DIR=/home/joso/workspace/projects/gideon
-RUN_GO=--rm -e LOGGER_LEVEL=$(log) -v `pwd`:$(SOURCE_DIR) -v $(cachevol) -w $(SOURCE_DIR) $(SERVICE_NAME)
+runbuild=docker run --rm -e CGO_ENABLED=0 -e GOOS=linux -e GOARCH=amd64 -v $(appvol) -v $(cachevol) $(img)
 runcompose=docker-compose run --rm -v $(appvol) -v $(cachevol)
 cov=coverage.out
 covhtml=coverage.html
@@ -28,16 +23,15 @@ modcache:
 	@mkdir -p $(modcachedir)
 
 imagedev:
-	docker build . -t $(SERVICE_NAME) -f ./hack/Dockerfile
+	docker build . -t $(img) -f ./hack/Dockerfile
 
 build: modcache imagedev
 	$(runbuild) go build -v -ldflags "-w -s -X main.Version=$(version)" -o ./cmd/gideon/gideon ./cmd/gideon
 
 check: modcache imagedev
-	docker run $(RUN_GO) ./hack/check.sh $(suite) $(test)
+	$(rundev) ./hack/check.sh $(suite) $(test)
 
 start-compose:
-# 	docker build -t db -f ./mock/db/Dockerfile .
 	docker-compose pull --ignore-pull-failures
 	docker-compose -f docker-compose.yml up -d;
 
@@ -52,20 +46,20 @@ stop:
 coverage: modcache check
 	$(rundev) go tool cover -html=$(cov) -o=$(covhtml)
 	xdg-open coverage.html
+
 static-analysis: modcache imagedev
 	$(rundev) golangci-lint run ./...
+
 modtidy: modcache imagedev
 	$(rundev) go mod tidy
+
 fmt: modcache imagedev
 	$(rundev) gofmt -w -s -l .
-githooks:
-	@echo "copying git hooks"
-	@mkdir -p .git/hooks
-	@cp hack/githooks/pre-commit .git/hooks/pre-commit
-	@chmod +x .git/hooks/pre-commit
-	@echo "git hooks copied"
+
+
 shell: modcache imagedev
 	$(rundev) sh
+	
 run: imagedev
 	$(runcompose) --service-ports --entrypoint "go run ./cmd/gideon/gideon.go" gideon
 

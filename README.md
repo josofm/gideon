@@ -35,32 +35,17 @@ Run:
 make check-integration
 ```
 
+### Test Coverage
+
 Open generated coverage on a browser:
 
 ```
 make coverage
 ```
+#### Static analysis
+
 To perform static analysis:
 
 ```
-make lint
-```
-
-## Releasing
-
-Run:
-
-```
-make release version=<version>
-```
-
-It will create a git tag with the provided **<version>**
-and build and publish a docker image.
-
-## Git Hooks
-
-To install the project githooks run:
-
-```
-make githooks
+make static-analysis
 ```
