@@ -137,6 +137,7 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 
 func TestShouldGetCardByNameCorrectly(t *testing.T) {
 	f := setup(model.User{}, nil, "")
+	time.Sleep(2 * time.Second) //sometimes the mtg api down
 	cards, err := f.c.GetCardByName("hogaak")
 
 	expectedSize := 1
@@ -165,6 +166,7 @@ func TestShouldGetErrorCreatingADeckWhenCardCantBeCommander(t *testing.T) {
 	expectedName := ""
 	f := setup(model.User{}, nil, expectedName)
 	deck := mock.GetBasicDeck()
+	time.Sleep(2 * time.Second) //sometimes the mtg api down
 	deck.Commander.Card.MultiverseId = "409574"
 	deckName, err := f.c.CreateDeck(deck, 1)
 	assert.NotNil(t, err, "Should be nil!")
