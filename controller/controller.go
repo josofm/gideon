@@ -2,7 +2,6 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -136,8 +135,6 @@ func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
 	q := mtg.NewQuery()
 	cards, err := q.Where(mtg.CardName, name).All()
 	if err != nil {
-		fmt.Println("jajajja ", cards)
-		fmt.Println("aaeh ", err)
 		return cards, err
 	}
 	return cards, nil
