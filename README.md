@@ -1,4 +1,6 @@
 # GIDEON
+[![Build Status](https://api.travis-ci.com/josofm/gideon.svg?branch=main)](https://travis-ci.com/github/josofm/gideon)
+[![Go Report Card](https://goreportcard.com/badge/github.com/josofm/gideon)](https://goreportcard.com/report/github.com/josofm/gideon)
 
 ![alt text](https://themanabase.com/wp-content/uploads/2017/10/Gideon-Amonkhet-2-e1506932824569.jpg)
 
@@ -35,32 +37,17 @@ Run:
 make check-integration
 ```
 
+### Test Coverage
+
 Open generated coverage on a browser:
 
 ```
 make coverage
 ```
+#### Static analysis
+
 To perform static analysis:
 
 ```
-make lint
-```
-
-## Releasing
-
-Run:
-
-```
-make release version=<version>
-```
-
-It will create a git tag with the provided **<version>**
-and build and publish a docker image.
-
-## Git Hooks
-
-To install the project githooks run:
-
-```
-make githooks
+make static-analysis
 ```

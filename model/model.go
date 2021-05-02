@@ -3,8 +3,8 @@ package model
 import (
 	"time"
 
-	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/josofm/mtg-sdk-go"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +24,7 @@ type Deck struct {
 
 type Card struct {
 	gorm.Model
-	ID        mtg.MultiverseId `gorm:"primaryKey"`
+	ID        mtg.MultiverseId `gorm:"primaryKey" json:"multiverseId,omitempty"`
 	Card      mtg.Card         `json:"card,omitempty"`
 	Price     Price            `json:"price, omitempty"`
 	CreatedAt time.Time
@@ -34,7 +34,7 @@ type Card struct {
 
 type Price struct {
 	gorm.Model
-	CardID    int
+	CardID    uint64
 	Minimun   float64 `json:"minimun,omitempty"`
 	Average   float64 `json:"average,omitempty"`
 	Maximum   float64 `json:"maximun,omitempty"`

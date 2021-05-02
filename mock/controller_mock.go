@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/josofm/gideon/model"
+	"github.com/josofm/mtg-sdk-go"
 )
 
 type ControllerMock struct {
@@ -40,4 +40,12 @@ func (c *ControllerMock) GetCardByName(name string) ([]*mtg.Card, error) {
 
 func (c *ControllerMock) CreateDeck(deck model.Deck, userId uint) (string, error) {
 	return c.DeckName, c.ErrGetDeck
+}
+
+func (c *ControllerMock) DeleteUser(id uint) error {
+	return c.Err
+}
+
+func (c *ControllerMock) UpdateUser(user model.User) error {
+	return c.Err
 }

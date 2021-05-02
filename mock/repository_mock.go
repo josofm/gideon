@@ -26,3 +26,11 @@ func (r *RepositoryMock) GetUser(id uint) (model.User, error) {
 func (r *RepositoryMock) CreateDeck(deck model.Deck) (string, error) {
 	return r.DeckName, r.Err
 }
+
+func (r *RepositoryMock) UpdateUser(user model.User) error {
+	return r.Err
+}
+
+func (r *RepositoryMock) DeleteUser(user model.User) error {
+	return r.Err
+}

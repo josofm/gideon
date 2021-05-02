@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/josofm/gideon/helper"
 	"github.com/josofm/gideon/model"
+	"github.com/josofm/mtg-sdk-go"
 )
 
 type Controller struct {
@@ -23,6 +23,8 @@ type Repository interface {
 	CreateUser(user model.User) (string, error)
 	GetUser(id uint) (model.User, error)
 	CreateDeck(deck model.Deck) (string, error)
+	UpdateUser(user model.User) error
+	DeleteUser(user model.User) error
 }
 
 type TimeClock interface {
@@ -113,10 +115,25 @@ func (c *Controller) GetUser(id uint) (model.User, error) {
 	return user, nil
 }
 
+func (c *Controller) DeleteUser(id uint) error {
+	var user model.User
+	user, err := c.repository.GetUser(id)
+	if err != nil {
+		return err
+	}
+	return c.repository.DeleteUser(user)
+}
+
+func (c *Controller) UpdateUser(user model.User) error {
+	if err := c.repository.UpdateUser(user); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
-	var cards []*mtg.Card
 	q := mtg.NewQuery()
-	cards, err := q.Where("name", name).All()
+	cards, err := q.Where(mtg.CardName, name).All()
 	if err != nil {
 		return cards, err
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/josofm/gideon/controller"
 	"github.com/josofm/gideon/mock"
 	"github.com/josofm/gideon/model"
-
+	"github.com/josofm/mtg-sdk-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -137,6 +137,7 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 
 func TestShouldGetCardByNameCorrectly(t *testing.T) {
 	f := setup(model.User{}, nil, "")
+	time.Sleep(2 * time.Second) //sometimes the mtg api down
 	cards, err := f.c.GetCardByName("hogaak")
 
 	expectedSize := 1
@@ -154,11 +155,19 @@ func TestShouldCreateDeckCorrectly(t *testing.T) {
 	assert.Equal(t, expectedName, deckName, "Should be Equal!")
 }
 
+func TestGetCardByID(t *testing.T) {
+	card, err := mtg.MultiverseId("464151").Fetch()
+	expectedCardName := "Hogaak, Arisen Necropolis"
+	assert.Nil(t, err, "Should be nil!")
+	assert.Equal(t, card.Name, expectedCardName, "Should be nil!")
+}
+
 func TestShouldGetErrorCreatingADeckWhenCardCantBeCommander(t *testing.T) {
 	expectedName := ""
 	f := setup(model.User{}, nil, expectedName)
 	deck := mock.GetBasicDeck()
-	deck.Commander.Card.MultiverseId = 409574
+	time.Sleep(2 * time.Second) //sometimes the mtg api down
+	deck.Commander.Card.MultiverseId = "409574"
 	deckName, err := f.c.CreateDeck(deck, 1)
 	assert.NotNil(t, err, "Should be nil!")
 	assert.Equal(t, expectedName, deckName, "Should be Equal!")
@@ -168,8 +177,47 @@ func TestShouldGetErrorCreatingADeckWhenCardisBanned(t *testing.T) {
 	expectedName := ""
 	f := setup(model.User{}, nil, expectedName)
 	deck := mock.GetBasicDeck()
-	deck.Commander.Card.MultiverseId = 425897
+	deck.Commander.Card.MultiverseId = "425897"
 	deckName, err := f.c.CreateDeck(deck, 1)
 	assert.NotNil(t, err, "Should be nil!")
 	assert.Equal(t, expectedName, deckName, "Should be Equal!")
+}
+
+func TestShouldDeleteUserCorrectly(t *testing.T) {
+	expectedName := ""
+	f := setup(model.User{}, nil, expectedName)
+	err := f.c.DeleteUser(1)
+	assert.Nil(t, err, "Should be nil!")
+}
+
+func TestShouldGetErrorDeleteingUser(t *testing.T) {
+	f := setup(model.User{}, errors.New("User not found"), "")
+	err := f.c.DeleteUser(1)
+	assert.NotNil(t, err, "Should be not nil!")
+}
+
+func TestShouldUpdateUserCorrectly(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, nil, "")
+	err := f.c.UpdateUser(u)
+	assert.Nil(t, err, "Update user ok")
+}
+
+func TestShouldGetErrorUpdatingUser(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, errors.New("Error Updating user"), "")
+	err := f.c.UpdateUser(u)
+	assert.NotNil(t, err, "Error updating a user")
 }

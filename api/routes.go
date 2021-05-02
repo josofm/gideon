@@ -18,6 +18,8 @@ func (api *Api) routes() *mux.Router {
 	s.Use(api.jwtVerify)
 	s.HandleFunc("/user/{id}", api.getUser).Methods("GET")
 	s.HandleFunc("/deck", api.addDeck).Methods("POST")
+	s.HandleFunc("/user/{id}", api.deleteUser).Methods("DELETE")
+	s.HandleFunc("/user/{id}", api.updateUser).Methods("PUT")
 
 	//TO DO add admin route
 

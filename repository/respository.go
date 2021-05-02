@@ -77,6 +77,22 @@ func (r *Repository) GetUser(id uint) (model.User, error) {
 	return r.user.Get(id, r.dbPool)
 }
 
+func (r *Repository) UpdateUser(user model.User) error {
+	err := r.connectDB()
+	if err != nil {
+		return err
+	}
+	return r.user.Update(user, r.dbPool)
+}
+
+func (r *Repository) DeleteUser(user model.User) error {
+	err := r.connectDB()
+	if err != nil {
+		return err
+	}
+	return r.user.Update(user, r.dbPool)
+}
+
 func (r *Repository) CreateDeck(deck model.Deck) (string, error) {
 	err := r.connectDB()
 	if err != nil {

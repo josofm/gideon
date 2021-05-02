@@ -11,12 +11,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/josofm/gideon/api"
 	"github.com/josofm/gideon/mock"
 	"github.com/josofm/gideon/model"
+	"github.com/josofm/mtg-sdk-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -366,13 +366,13 @@ func TestShouldInsertDeckCorrectly(t *testing.T) {
 		"name": "best deck",
 		"commander": {
 			"card": {
-				"multiverseID": 389712
+				"multiverseID": "389712"
 			}
 		},
 		"cards": [
 			{
 				"card": {
-					"multiverseID": 194969
+					"multiverseID": "194969"
 				}
 			}
 		]

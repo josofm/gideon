@@ -15,3 +15,6 @@ CREATE TABLE IF NOT EXISTS "users"
 
 INSERT INTO "users" ("name", "sex", "age", "password", "email") VALUES (
 		    'gideon jura', 'm','44','$2a$10$mU.3JaxIdQleWHKzubf.yO6n5Ulnizmbju/i73XkuaDTt5lO1fhEC', 'gideon@mtg.com');
+
+INSERT INTO "users" ("name", "sex", "age", "password", "email") VALUES (
+            'Tibalt Impostor', 'm','57','$2a$10$mU.3JaxIdQleWHKzubf.yO6n5Ulnizmbju/i73XkuaDTt5lO1fhEC', 'tibalt@mtg.com');
