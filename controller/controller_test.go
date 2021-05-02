@@ -195,3 +195,29 @@ func TestShouldGetErrorDeleteingUser(t *testing.T) {
 	err := f.c.DeleteUser(1)
 	assert.NotNil(t, err, "Should be not nil!")
 }
+
+func TestShouldUpdateUserCorrectly(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, nil, "")
+	err := f.c.UpdateUser(u)
+	assert.Nil(t, err, "Update user ok")
+}
+
+func TestShouldGetErrorUpdatingUser(t *testing.T) {
+	u := model.User{
+		Name:     "jace belerem",
+		Sex:      "m",
+		Age:      "12",
+		Email:    "jace@mtg.com",
+		Password: "$3dsfTrcsa",
+	}
+	f := setup(u, errors.New("Error Updating user"), "")
+	err := f.c.UpdateUser(u)
+	assert.NotNil(t, err, "Error updating a user")
+}

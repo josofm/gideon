@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -132,28 +133,15 @@ func (api *Api) jwtVerify(next http.Handler) http.Handler {
 }
 
 func (api *Api) getUser(w http.ResponseWriter, r *http.Request) {
-	log.Print("[getUser] trying get user")
-	vars := mux.Vars(r)
-	id, ok := vars["id"]
-	if !ok {
-		log.Print("[getUser] no id")
-		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
+	methodName := "getUser"
+	log.Printf("[%v] trying get user", methodName)
+	statusCode, userID, err := api.validateTokenUser(methodName, r)
+	if err != nil {
+		sendErrorMessage(w, statusCode, err.Error())
 		return
 	}
 
-	token, ok := r.Context().Value("user").(model.Token)
-	if !ok || token == (model.Token{}) {
-		log.Print("[getUser] wrong user")
-		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
-		return
-	}
-	tokenIdString := fmt.Sprintf("%v", token.UserID)
-	if id != tokenIdString {
-		log.Print("[getUser] wrong user")
-		sendErrorMessage(w, http.StatusForbidden, "field not allowed")
-		return
-	}
-	user, err := api.controller.GetUser(uint(token.UserID))
+	user, err := api.controller.GetUser(uint(userID))
 	if err != nil {
 		log.Print("[getUser] user not found")
 		sendErrorMessage(w, http.StatusNotFound, "User not found")
@@ -218,78 +206,72 @@ func (api *Api) addDeck(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *Api) deleteUser(w http.ResponseWriter, r *http.Request) {
-	log.Print("[deleteUser] trying delete user")
-	vars := mux.Vars(r)
-	id, ok := vars["id"]
-	if !ok {
-		log.Print("[deleteUser] no id")
-		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
-		return
-	}
-
-	token, ok := r.Context().Value("user").(model.Token)
-	if !ok || token == (model.Token{}) {
-		log.Print("[deleteUser] wrong user")
-		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
-		return
-	}
-	tokenIdString := fmt.Sprintf("%v", token.UserID)
-	if id != tokenIdString {
-		log.Print("[deleteUser] wrong user")
-		sendErrorMessage(w, http.StatusForbidden, "field not allowed")
-		return
-	}
-	err := api.controller.DeleteUser(uint(token.UserID))
+	methodName := "deleteUser"
+	log.Printf("[%v] trying delete user", methodName)
+	statusCode, userID, err := api.validateTokenUser(methodName, r)
 	if err != nil {
-		log.Print("[deleteUser] user not found")
+		sendErrorMessage(w, statusCode, err.Error())
+		return
+	}
+	err = api.controller.DeleteUser(uint(userID))
+	if err != nil {
+		log.Printf("[%v] user not found", methodName)
 		sendErrorMessage(w, http.StatusNotFound, "User not found")
 		return
 	}
-	log.Print("[deleteUser] Delete user ok")
+	log.Printf("[%v] Delete user ok", methodName)
 	send(w, http.StatusOK, "User deleted")
 	return
 
 }
 
 func (api *Api) updateUser(w http.ResponseWriter, r *http.Request) {
-	log.Print("[updateUser] trying update user")
-	vars := mux.Vars(r)
-	id, ok := vars["id"]
-	if !ok {
-		log.Print("[updateUser] no id")
-		sendErrorMessage(w, http.StatusBadRequest, "Malformed endpoint")
-		return
-	}
+	methodName := "updateUser"
+	log.Printf("[%v] trying update user", methodName)
 
-	token, ok := r.Context().Value("user").(model.Token)
-	if !ok || token == (model.Token{}) {
-		log.Print("[updateUser] wrong user")
-		sendErrorMessage(w, http.StatusBadRequest, "Wrong token")
-		return
-	}
-	tokenIdString := fmt.Sprintf("%v", token.UserID)
-	if id != tokenIdString {
-		log.Print("[updateUser] wrong user")
-		sendErrorMessage(w, http.StatusForbidden, "field not allowed")
+	statusCode, userID, err := api.validateTokenUser(methodName, r)
+	if err != nil {
+		sendErrorMessage(w, statusCode, err.Error())
 		return
 	}
 	var user model.User
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&user)
+	err = decoder.Decode(&user)
 	if err != nil || (model.User{}) == user {
 		sendErrorMessage(w, http.StatusInternalServerError, "Invalid request - Invalid Credentials")
 	}
 	defer r.Body.Close()
-	user.ID = uint(token.UserID)
+	user.ID = uint(userID)
 	err = api.controller.UpdateUser(user)
 	if err != nil {
 		sendErrorMessage(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	log.Print("[updateUser] Update user ok")
+	log.Printf("[%v] Update user ok", methodName)
 	send(w, http.StatusOK, "User updated successfully")
 	return
+
+}
+
+func (api *Api) validateTokenUser(method string, r *http.Request) (int, int, error) {
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		log.Printf("[%v] no id", method)
+		return http.StatusBadRequest, 0, errors.New("Malformed endpoint")
+	}
+	token, ok := r.Context().Value("user").(model.Token)
+	if !ok || token == (model.Token{}) {
+		log.Printf("[%v] wrong user", method)
+		return http.StatusBadRequest, int(token.UserID), errors.New("Wrong token")
+	}
+	tokenIdString := fmt.Sprintf("%v", token.UserID)
+	if id != tokenIdString {
+		log.Printf("[%v] wrong user", method)
+		return http.StatusForbidden, int(token.UserID), errors.New("field not allowed")
+	}
+	return http.StatusOK, int(token.UserID), nil
 
 }
 

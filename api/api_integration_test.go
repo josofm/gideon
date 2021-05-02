@@ -13,6 +13,7 @@ import (
 	"github.com/josofm/gideon/api"
 	"github.com/josofm/gideon/clock"
 	"github.com/josofm/gideon/controller"
+	"github.com/josofm/gideon/model"
 	"github.com/josofm/gideon/repository"
 	"github.com/stretchr/testify/assert"
 )
@@ -186,6 +187,44 @@ func TestShouldGetForbiddenWhenUserIdDidNotMatches(t *testing.T) {
 }
 
 func TestShouldUpdateUserCorrectly(t *testing.T) {
+	f := setupIntegration()
+	body := []byte(`{
+	    "email": "tibalt@mtg.com",
+	    "password": "123change"
+	}`)
+
+	token := loginTest(body)
+
+	bodyEdition := []byte(`{
+		"age": "60"
+	}`)
+
+	r, err := http.NewRequest("PUT", baseUrl+"/auth/user/2", bytes.NewBuffer(bodyEdition))
+	r.Header.Add("access-token", token["token"].(string))
+	resp, err := f.client.Do(r)
+
+	rGet, err := http.NewRequest("GET", baseUrl+"/auth/user/2", nil)
+	rGet.Header.Add("access-token", token["token"].(string))
+	respGet, err := f.client.Do(rGet)
+	defer respGet.Body.Close()
+
+	var user model.User
+	decoder := json.NewDecoder(respGet.Body)
+	err = decoder.Decode(&user)
+
+	expectedAge := "60"
+	expectedName := "Tibalt Impostor"
+
+	assert.NotNil(t, resp.Body, "Should be not nil!")
+	assert.Equal(t, expectedAge, user.Age, "Age Should be equal!")
+	assert.Equal(t, expectedName, user.Name, "Name Should be equal!")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Should status code updating be equal!")
+	assert.Equal(t, http.StatusOK, respGet.StatusCode, "Should status code getting be equal!")
+	assert.Nil(t, err, "Should be nil!")
+
+}
+
+func TestShouldDeleteUserCorrectly(t *testing.T) {
 	f := setupIntegration()
 
 	body := []byte(`{
