@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/josofm/mtg-sdk-go"
 	"gorm.io/gorm"
 )

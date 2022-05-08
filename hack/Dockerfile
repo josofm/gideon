@@ -1,4 +1,4 @@
-FROM golang:1.16
+FROM golang:1.17
 
 ENV GOLANG_CI_LINT_VERSION=v1.30.0
 

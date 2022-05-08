@@ -1,5 +1,15 @@
-version: "3"
+version: "3.8"
 services:
+  gideon:
+    image: gideon
+    depends_on:
+      - db
+    volumes:
+      - .:/home/josue-machado/workspace/personal_projects/joso/gideon
+    ports:
+      - "80:80"
+    networks:
+      - some-network
   db:
     image: postgres
     volumes:
@@ -13,15 +23,5 @@ services:
     networks:
       - some-network
 
-  gideon:
-    image: gideon:latest
-    depends_on:
-      - db
-    volumes:
-      - .:/home/joso/workspace/projects/gideon
-    ports:
-      - "80:80"
-    networks:
-      - some-network
 networks: 
   some-network:

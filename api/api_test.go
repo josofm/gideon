@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package api_test
@@ -11,7 +12,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
 	"github.com/josofm/gideon/api"
 	"github.com/josofm/gideon/mock"

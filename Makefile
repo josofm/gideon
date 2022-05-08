@@ -32,7 +32,7 @@ check: modcache imagedev
 	$(rundev) ./hack/check.sh $(suite) $(test)
 
 start-compose:
-	docker-compose pull --ignore-pull-failures
+	docker-compose pull db 
 	docker-compose -f docker-compose.yml up -d;
 
 check-integration: build start-compose
