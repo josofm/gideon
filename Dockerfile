@@ -1,4 +1,4 @@
-FROM alpine:3.9
+FROM scratch
 
 RUN apk --no-cache update && \
 	apk --no-cache add ca-certificates tzdata && \
