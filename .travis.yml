@@ -10,7 +10,7 @@ language: go
 
 go:
   - "tip"
-  - "1.16"
+  - "1.17"
 
 script:
   - make check
