@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package api_test
@@ -160,7 +161,7 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 	}`)
 	token := loginTest(body)
 
-	r, err := http.NewRequest("GET", baseUrl+"/auth/user/1", nil)
+	r, err := http.NewRequest("GET", baseUrl+"/user/1", nil)
 	r.Header.Add("access-token", token["token"].(string))
 	resp, err := f.client.Do(r)
 	assert.NotNil(t, resp.Body, "Should be not nil!")
@@ -178,7 +179,7 @@ func TestShouldGetForbiddenWhenUserIdDidNotMatches(t *testing.T) {
 	}`)
 	token := loginTest(body)
 
-	r, err := http.NewRequest("GET", baseUrl+"/auth/user/7", nil)
+	r, err := http.NewRequest("GET", baseUrl+"/user/7", nil)
 	r.Header.Add("access-token", token["token"].(string))
 	resp, err := f.client.Do(r)
 	assert.NotNil(t, resp.Body, "Should be not nil!")
@@ -199,11 +200,11 @@ func TestShouldUpdateUserCorrectly(t *testing.T) {
 		"age": "60"
 	}`)
 
-	r, err := http.NewRequest("PUT", baseUrl+"/auth/user/2", bytes.NewBuffer(bodyEdition))
+	r, err := http.NewRequest("PUT", baseUrl+"/user/2", bytes.NewBuffer(bodyEdition))
 	r.Header.Add("access-token", token["token"].(string))
 	resp, err := f.client.Do(r)
 
-	rGet, err := http.NewRequest("GET", baseUrl+"/auth/user/2", nil)
+	rGet, err := http.NewRequest("GET", baseUrl+"/user/2", nil)
 	rGet.Header.Add("access-token", token["token"].(string))
 	respGet, err := f.client.Do(rGet)
 	defer respGet.Body.Close()
@@ -233,7 +234,7 @@ func TestShouldDeleteUserCorrectly(t *testing.T) {
 	}`)
 
 	token := loginTest(body)
-	r, err := http.NewRequest("DELETE", baseUrl+"/auth/user/2", nil)
+	r, err := http.NewRequest("DELETE", baseUrl+"/user/2", nil)
 	r.Header.Add("access-token", token["token"].(string))
 	resp, err := f.client.Do(r)
 

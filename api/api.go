@@ -107,10 +107,10 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (api *Api) jwtVerify(next http.Handler) http.Handler {
+func (api *Api) jwtVerify(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Print("[jwtVerify] triyng get token")
-		var header = r.Header.Get("access-token") //Grab the token from the header
+		var header = r.Header.Get("access-token")
 		header = strings.TrimSpace(header)
 		if header == "" {
 			log.Print("[jwtVerify] Token is missing, returns with error code 403 Unauthorized")

@@ -35,10 +35,13 @@ func setup(c *mock.ControllerMock) fixture {
 	router.HandleFunc("/login", api.Login).Methods("POST")
 	router.HandleFunc("/register", api.Register).Methods("POST")
 	router.HandleFunc("/card/{name}", api.GetCardByName).Methods("GET")
-	s := router.PathPrefix("/auth").Subrouter()
-	s.Use(api.JwtVerify)
-	s.HandleFunc("/user/{id}", api.GetUser).Methods("GET")
-	s.HandleFunc("/deck", api.AddDeck).Methods("POST")
+	router.HandleFunc("/user/{id}", api.JwtVerify(api.GetUser)).Methods("GET")
+	router.HandleFunc("/deck", api.JwtVerify(api.AddDeck)).Methods("POST")
+	// s := router.PathPrefix("/auth").Subrouter()
+
+	// s.Use(api.JwtVerify)
+	// s.HandleFunc("/user/{id}", api.GetUser).Methods("GET")
+	// s.HandleFunc("/deck", api.AddDeck).Methods("POST")
 
 	return fixture{
 		api: api,
@@ -210,7 +213,7 @@ func TestShouldGetErrorWhenNotInformToken(t *testing.T) {
 
 	body := []byte(`{"nottoken": ""}`)
 
-	r, err := http.NewRequest("GET", "/auth/user/32", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/32", bytes.NewBuffer(body))
 	rr := httptest.NewRecorder()
 
 	f.r.ServeHTTP(rr, r)
@@ -226,7 +229,7 @@ func TestShouldGetErrorWhenCantParseTheToken(t *testing.T) {
 	f := setup(c)
 
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/32", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/32", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -250,7 +253,7 @@ func TestShouldGetStatusForbiddenWhenTryGetUserWithDidNotmatchIds(t *testing.T) 
 	f := setup(c)
 
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/s", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/s", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -275,7 +278,7 @@ func TestShouldGetStatusForbiddenWhenTryGetUserWithNotValidParameter(t *testing.
 	f := setup(c)
 
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/1", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -300,7 +303,7 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 	f := setup(c)
 
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/1", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -317,7 +320,7 @@ func TestShouldGetBadRequestWhenMalformedToken(t *testing.T) {
 
 	f := setup(c)
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/1", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -378,7 +381,7 @@ func TestShouldInsertDeckCorrectly(t *testing.T) {
 			}
 		]
 	}`)
-	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", "/deck", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -402,7 +405,7 @@ func TestShouldGetErrorInsertingADeckWhenBodyDidNotHaveInformation(t *testing.T)
 	}
 	f := setup(c)
 	body := []byte(``)
-	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", "/deck", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -442,7 +445,7 @@ func TestShouldInsertDeckCorrectlyButGetErrorBecauseIsNotValidCommander(t *testi
 			}
 		]
 	}`)
-	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", "/deck", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
