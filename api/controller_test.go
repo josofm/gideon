@@ -1,4 +1,4 @@
-package mock
+package api_test
 
 import (
 	"github.com/josofm/gideon/model"

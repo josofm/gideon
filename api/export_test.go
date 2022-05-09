@@ -18,7 +18,7 @@ func (api *Api) GetCardByName(w http.ResponseWriter, r *http.Request) {
 	api.getCardByName(w, r)
 }
 
-func (api *Api) JwtVerify(next http.Handler) http.Handler {
+func (api *Api) JwtVerify(next http.HandlerFunc) http.HandlerFunc {
 	return api.jwtVerify(next)
 }
 

@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package controller_test
@@ -21,13 +22,13 @@ type fixture struct {
 
 func setup(user model.User, err error, deckName string) fixture {
 	os.Setenv("SECRET_JWT", "generic_jwt_token")
-	r := &mock.RepositoryMock{}
+	r := &RepositoryMock{}
 	r.User = user
 	r.Err = err
 	r.Email = user.Email
 	r.DeckName = deckName
 
-	clock := &mock.ClockMock{}
+	clock := &ClockMock{}
 	clock.NowMock = time.Date(2020, 04, 30, 20, 34, 58, 651387237, time.UTC)
 
 	c := controller.NewController(r, clock)

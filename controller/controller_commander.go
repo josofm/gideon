@@ -1,4 +1,4 @@
-package helper
+package controller
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/josofm/mtg-sdk-go"
 )
 
-func IsBanned(card *mtg.Card, format string) bool {
+func isBanned(card *mtg.Card, format string) bool {
 	for _, l := range card.Legalities {
 		if l.Format == format && l.Legality == "Legal" {
 			return false
@@ -16,14 +16,14 @@ func IsBanned(card *mtg.Card, format string) bool {
 	return true
 }
 
-func IsValidCommander(multiverseID mtg.MultiverseId) bool {
+func isValidCommander(multiverseID mtg.MultiverseId) bool {
 	card, err := mtg.MultiverseId(multiverseID).Fetch()
 	fmt.Println(err)
 	fmt.Println(card)
 	if err != nil {
 		return false
 	}
-	if IsBanned(card, "Commander") {
+	if isBanned(card, "Commander") {
 		return false
 	}
 	rarity := false

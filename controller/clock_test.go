@@ -1,4 +1,4 @@
-package mock
+package controller_test
 
 import "time"
 

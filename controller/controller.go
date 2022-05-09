@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/josofm/gideon/helper"
 	"github.com/josofm/gideon/model"
 	"github.com/josofm/mtg-sdk-go"
 )
@@ -82,7 +81,7 @@ func (c *Controller) createToken(user model.User) (map[string]interface{}, error
 }
 
 func (c *Controller) CreateUser(user model.User) (string, error) {
-	if !helper.UserHasAllFields(user) {
+	if !userHasAllFields(user) {
 		log.Print("[createUser] missing parameters")
 		return "", errors.New("Missing parameters")
 	}
@@ -142,7 +141,7 @@ func (c *Controller) GetCardByName(name string) ([]*mtg.Card, error) {
 
 func (c *Controller) CreateDeck(deck model.Deck, userId uint) (string, error) {
 	deck.Owner.ID = userId
-	if !helper.IsValidCommander(deck.Commander.Card.MultiverseId) {
+	if !isValidCommander(deck.Commander.Card.MultiverseId) {
 		return "", errors.New("A commander must be a legendary card")
 	}
 	deckName, err := c.repository.CreateDeck(deck)

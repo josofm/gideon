@@ -1,10 +1,10 @@
-package helper
+package controller
 
 import (
 	"github.com/josofm/gideon/model"
 )
 
-func UserHasAllFields(user model.User) bool {
+func userHasAllFields(user model.User) bool {
 	if user.Name == "" {
 		return false
 	} else if user.Sex == "" {

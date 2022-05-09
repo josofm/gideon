@@ -15,7 +15,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
 	"github.com/josofm/gideon/api"
-	"github.com/josofm/gideon/mock"
 	"github.com/josofm/gideon/model"
 	"github.com/josofm/mtg-sdk-go"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +25,7 @@ type fixture struct {
 	r   *mux.Router
 }
 
-func setup(c *mock.ControllerMock) fixture {
+func setup(c *ControllerMock) fixture {
 	api := api.NewApi(c)
 
 	router := mux.NewRouter().StrictSlash(true)
@@ -35,10 +34,8 @@ func setup(c *mock.ControllerMock) fixture {
 	router.HandleFunc("/login", api.Login).Methods("POST")
 	router.HandleFunc("/register", api.Register).Methods("POST")
 	router.HandleFunc("/card/{name}", api.GetCardByName).Methods("GET")
-	s := router.PathPrefix("/auth").Subrouter()
-	s.Use(api.JwtVerify)
-	s.HandleFunc("/user/{id}", api.GetUser).Methods("GET")
-	s.HandleFunc("/deck", api.AddDeck).Methods("POST")
+	router.HandleFunc("/user/{id}", api.JwtVerify(api.GetUser)).Methods("GET")
+	router.HandleFunc("/deck", api.JwtVerify(api.AddDeck)).Methods("POST")
 
 	return fixture{
 		api: api,
@@ -48,7 +45,7 @@ func setup(c *mock.ControllerMock) fixture {
 }
 
 func TestUpAPI(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.Err = nil
 	c.Email = ""
@@ -69,7 +66,7 @@ func TestShouldLoginCorrectly(t *testing.T) {
 	expectedJwt := map[string]interface{}{
 		"token": "tokenzera",
 	}
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = expectedJwt
 	c.Err = nil
 	c.Email = ""
@@ -93,7 +90,7 @@ func TestShouldLoginCorrectly(t *testing.T) {
 }
 
 func TestShouldGetErrorWhenBodyIsWrong(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.Err = nil
 	c.Email = ""
@@ -112,7 +109,7 @@ func TestShouldGetErrorWhenBodyIsWrong(t *testing.T) {
 }
 
 func TestShouldGetErrorWhenInvalidCredentials(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.Err = errors.New("login invalid")
 	c.Email = ""
@@ -134,7 +131,7 @@ func TestShouldRegisterNewUserCorrectly(t *testing.T) {
 	expectedEmail := "capeta@mtg.com"
 	ExpectedMessage := fmt.Sprintf("Welcome %v", expectedEmail)
 
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.Err = nil
 	c.Email = expectedEmail
@@ -163,7 +160,7 @@ func TestShouldRegisterNewUserCorrectly(t *testing.T) {
 }
 
 func TestShouldGetErrorToRegisterWhenUserInformWrongBody(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.Err = nil
 	c.Email = ""
@@ -180,7 +177,7 @@ func TestShouldGetErrorToRegisterWhenUserInformWrongBody(t *testing.T) {
 }
 
 func TestShouldGetErrorToRegisterWhenUserInformFewValues(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.Err = errors.New("missing parameters")
 	c.Email = ""
@@ -202,7 +199,7 @@ func TestShouldGetErrorToRegisterWhenUserInformFewValues(t *testing.T) {
 }
 
 func TestShouldGetErrorWhenNotInformToken(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.Err = nil
 	c.Email = ""
@@ -210,7 +207,7 @@ func TestShouldGetErrorWhenNotInformToken(t *testing.T) {
 
 	body := []byte(`{"nottoken": ""}`)
 
-	r, err := http.NewRequest("GET", "/auth/user/32", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/32", bytes.NewBuffer(body))
 	rr := httptest.NewRecorder()
 
 	f.r.ServeHTTP(rr, r)
@@ -219,14 +216,14 @@ func TestShouldGetErrorWhenNotInformToken(t *testing.T) {
 }
 
 func TestShouldGetErrorWhenCantParseTheToken(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.Err = errors.New("generic error")
 	c.Email = ""
 	f := setup(c)
 
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/32", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/32", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -235,7 +232,7 @@ func TestShouldGetErrorWhenCantParseTheToken(t *testing.T) {
 }
 
 func TestShouldGetStatusForbiddenWhenTryGetUserWithDidNotmatchIds(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.ErrGetUser = nil
 	c.Email = ""
@@ -250,7 +247,7 @@ func TestShouldGetStatusForbiddenWhenTryGetUserWithDidNotmatchIds(t *testing.T) 
 	f := setup(c)
 
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/s", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/s", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -260,7 +257,7 @@ func TestShouldGetStatusForbiddenWhenTryGetUserWithDidNotmatchIds(t *testing.T) 
 }
 
 func TestShouldGetStatusForbiddenWhenTryGetUserWithNotValidParameter(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.ErrGetUser = errors.New("Error getting user")
 	c.Email = ""
@@ -275,7 +272,7 @@ func TestShouldGetStatusForbiddenWhenTryGetUserWithNotValidParameter(t *testing.
 	f := setup(c)
 
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/1", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -285,7 +282,7 @@ func TestShouldGetStatusForbiddenWhenTryGetUserWithNotValidParameter(t *testing.
 }
 
 func TestShouldGetUserCorrectly(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.ErrGetUser = nil
 	c.Email = ""
@@ -300,7 +297,7 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 	f := setup(c)
 
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/1", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -310,14 +307,14 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 }
 
 func TestShouldGetBadRequestWhenMalformedToken(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.ErrGetUser = nil
 	c.Email = ""
 
 	f := setup(c)
 	body := []byte(``)
-	r, err := http.NewRequest("GET", "/auth/user/1", bytes.NewBuffer(body))
+	r, err := http.NewRequest("GET", "/user/1", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -327,7 +324,7 @@ func TestShouldGetBadRequestWhenMalformedToken(t *testing.T) {
 }
 
 func TestShouldGetCardByIdCorrectly(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Cards = []*mtg.Card{
 		{
 			Name: "Hogaak, Arisen Necropolis",
@@ -348,7 +345,7 @@ func TestShouldGetCardByIdCorrectly(t *testing.T) {
 }
 
 func TestShouldInsertDeckCorrectly(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.ErrGetUser = nil
 	c.Email = ""
@@ -378,7 +375,7 @@ func TestShouldInsertDeckCorrectly(t *testing.T) {
 			}
 		]
 	}`)
-	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", "/deck", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -388,7 +385,7 @@ func TestShouldInsertDeckCorrectly(t *testing.T) {
 }
 
 func TestShouldGetErrorInsertingADeckWhenBodyDidNotHaveInformation(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.ErrGetUser = nil
 	c.Email = ""
@@ -402,7 +399,7 @@ func TestShouldGetErrorInsertingADeckWhenBodyDidNotHaveInformation(t *testing.T)
 	}
 	f := setup(c)
 	body := []byte(``)
-	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", "/deck", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
@@ -412,7 +409,7 @@ func TestShouldGetErrorInsertingADeckWhenBodyDidNotHaveInformation(t *testing.T)
 }
 
 func TestShouldInsertDeckCorrectlyButGetErrorBecauseIsNotValidCommander(t *testing.T) {
-	c := &mock.ControllerMock{}
+	c := &ControllerMock{}
 	c.Token = nil
 	c.ErrGetUser = nil
 	c.Email = ""
@@ -442,7 +439,7 @@ func TestShouldInsertDeckCorrectlyButGetErrorBecauseIsNotValidCommander(t *testi
 			}
 		]
 	}`)
-	r, err := http.NewRequest("POST", "/auth/deck", bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", "/deck", bytes.NewBuffer(body))
 	r.Header.Set("access-token", "humansoldier1/1")
 	rr := httptest.NewRecorder()
 	f.r.ServeHTTP(rr, r)
