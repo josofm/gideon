@@ -53,6 +53,14 @@ func (r *Repository) connectDB() error {
 
 }
 
+func (r *Repository) Clean(origin string) {
+	if origin == "test" {
+		if err := r.connectDB(); err == nil {
+			r.dbPool.Exec("DROP TABLE users")
+		}
+	}
+}
+
 func (r *Repository) Login(email, pass string) (model.User, error) {
 	err := r.connectDB()
 	if err != nil {

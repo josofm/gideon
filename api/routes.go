@@ -16,7 +16,7 @@ func (api *Api) routes() *mux.Router {
 	router.HandleFunc("/user/{id}", api.jwtVerify(api.getUser)).Methods("GET")
 	router.HandleFunc("/deck", api.jwtVerify(api.addDeck)).Methods("POST")
 	router.HandleFunc("/user/{id}", api.jwtVerify(api.deleteUser)).Methods("DELETE")
-	router.HandleFunc("/user/{id}", api.jwtVerify(api.updateUser)).Methods("PUT")
+	router.HandleFunc("/user/{id}", api.jwtVerify(api.updateUser)).Methods("PATCH")
 
 	return router
 }

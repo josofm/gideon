@@ -16,6 +16,7 @@ import (
 	"github.com/josofm/gideon/controller"
 	"github.com/josofm/gideon/model"
 	"github.com/josofm/gideon/repository"
+	"github.com/josofm/gideon/test"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,9 +28,13 @@ const (
 type fixtureIntegration struct {
 	a      *api.Api
 	client *http.Client
+	r      *repository.Repository
 }
 
-//TO DO teardowntest func to clean database and shutdown server
+func (f *fixtureIntegration) tearDown() {
+	test.Clean(f.r)
+}
+
 func setupIntegration() fixtureIntegration {
 
 	os.Setenv("ELEPHANTSQL_URL", "postgres://postgres:teste@db:5432/gideondev?sslmode=disable")
@@ -48,6 +53,7 @@ func setupIntegration() fixtureIntegration {
 	f := fixtureIntegration{
 		a:      a,
 		client: cli,
+		r:      r,
 	}
 	go f.a.StartServer()
 	WaitServerUp()
@@ -68,7 +74,17 @@ func WaitServerUp() {
 }
 
 func TestShouldLoginCorrectly(t *testing.T) {
-	_ = setupIntegration()
+	f := setupIntegration()
+	defer f.tearDown()
+	u := model.User{
+		Name:     "gideon jura",
+		Sex:      "m",
+		Age:      "34",
+		Email:    "gideon@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
+
 	body := []byte(`{
 	    "email": "gideon@mtg.com",
 	    "password": "123change"
@@ -81,7 +97,17 @@ func TestShouldLoginCorrectly(t *testing.T) {
 }
 
 func TestShouldGetNotFoundWhenLoginNotFound(t *testing.T) {
-	_ = setupIntegration()
+	f := setupIntegration()
+	defer f.tearDown()
+	u := model.User{
+		Name:     "gideon jura",
+		Sex:      "m",
+		Age:      "34",
+		Email:    "gideon@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
+
 	body := []byte(`{
 	    "email": "yugi@bandai.com",
 	    "password": "123change"
@@ -93,7 +119,18 @@ func TestShouldGetNotFoundWhenLoginNotFound(t *testing.T) {
 }
 
 func TestShouldGetNotFoundPasswordNotMatches(t *testing.T) {
-	_ = setupIntegration()
+	f := setupIntegration()
+	defer f.tearDown()
+
+	u := model.User{
+		Name:     "gideon jura",
+		Sex:      "m",
+		Age:      "34",
+		Email:    "gideon@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
+
 	body := []byte(`{
 	    "email": "gideon@mtg.com",
 	    "password": "123notchange"
@@ -106,7 +143,17 @@ func TestShouldGetNotFoundPasswordNotMatches(t *testing.T) {
 }
 
 func TestShouldRegisterCorrectly(t *testing.T) {
-	_ = setupIntegration()
+	f := setupIntegration()
+	defer f.tearDown()
+	u := model.User{
+		Name:     "gideon jura",
+		Sex:      "m",
+		Age:      "34",
+		Email:    "gideon@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
+
 	body := []byte(`{
 	    "email": "liliana@mtg.com",
 	    "password": "123change",
@@ -121,9 +168,19 @@ func TestShouldRegisterCorrectly(t *testing.T) {
 	assert.Nil(t, err, "Should be nil!")
 }
 
-//In this case, is a sequential test
 func TestShouldGetErrorWhenEmailAlreadyRegister(t *testing.T) {
-	_ = setupIntegration()
+	f := setupIntegration()
+	defer f.tearDown()
+
+	u := model.User{
+		Name:     "Gideon Jura",
+		Sex:      "m",
+		Age:      "32",
+		Email:    "gideon@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
+
 	body := []byte(`{
 	    "email": "gideon@mtg.com",
 	    "password": "123change",
@@ -139,7 +196,8 @@ func TestShouldGetErrorWhenEmailAlreadyRegister(t *testing.T) {
 }
 
 func TestShouldGetErrorWhenReceiveAWrongBody(t *testing.T) {
-	_ = setupIntegration()
+	f := setupIntegration()
+	defer f.tearDown()
 	body := []byte(`{
 	    "email": "liliana@mtg.com",
 	    "age": "32",
@@ -154,6 +212,16 @@ func TestShouldGetErrorWhenReceiveAWrongBody(t *testing.T) {
 
 func TestShouldGetUserCorrectly(t *testing.T) {
 	f := setupIntegration()
+	defer f.tearDown()
+
+	u := model.User{
+		Name:     "Gideon Jura",
+		Sex:      "m",
+		Age:      "32",
+		Email:    "gideon@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
 
 	body := []byte(`{
 	    "email": "gideon@mtg.com",
@@ -172,6 +240,16 @@ func TestShouldGetUserCorrectly(t *testing.T) {
 
 func TestShouldGetForbiddenWhenUserIdDidNotMatches(t *testing.T) {
 	f := setupIntegration()
+	defer f.tearDown()
+
+	u := model.User{
+		Name:     "Gideon Jura",
+		Sex:      "m",
+		Age:      "32",
+		Email:    "gideon@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
 
 	body := []byte(`{
 	    "email": "gideon@mtg.com",
@@ -179,7 +257,7 @@ func TestShouldGetForbiddenWhenUserIdDidNotMatches(t *testing.T) {
 	}`)
 	token := loginTest(body)
 
-	r, err := http.NewRequest("GET", baseUrl+"/user/7", nil)
+	r, err := http.NewRequest("GET", baseUrl+"/user/16", nil)
 	r.Header.Add("access-token", token["token"].(string))
 	resp, err := f.client.Do(r)
 	assert.NotNil(t, resp.Body, "Should be not nil!")
@@ -189,6 +267,17 @@ func TestShouldGetForbiddenWhenUserIdDidNotMatches(t *testing.T) {
 
 func TestShouldUpdateUserCorrectly(t *testing.T) {
 	f := setupIntegration()
+	defer f.tearDown()
+
+	u := model.User{
+		Name:     "Tibalt Impostor",
+		Age:      "5",
+		Sex:      "m",
+		Email:    "tibalt@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
+
 	body := []byte(`{
 	    "email": "tibalt@mtg.com",
 	    "password": "123change"
@@ -200,11 +289,11 @@ func TestShouldUpdateUserCorrectly(t *testing.T) {
 		"age": "60"
 	}`)
 
-	r, err := http.NewRequest("PUT", baseUrl+"/user/2", bytes.NewBuffer(bodyEdition))
+	r, err := http.NewRequest("PATCH", baseUrl+"/user/1", bytes.NewBuffer(bodyEdition))
 	r.Header.Add("access-token", token["token"].(string))
 	resp, err := f.client.Do(r)
 
-	rGet, err := http.NewRequest("GET", baseUrl+"/user/2", nil)
+	rGet, err := http.NewRequest("GET", baseUrl+"/user/1", nil)
 	rGet.Header.Add("access-token", token["token"].(string))
 	respGet, err := f.client.Do(rGet)
 	defer respGet.Body.Close()
@@ -227,6 +316,16 @@ func TestShouldUpdateUserCorrectly(t *testing.T) {
 
 func TestShouldDeleteUserCorrectly(t *testing.T) {
 	f := setupIntegration()
+	defer f.tearDown()
+
+	u := model.User{
+		Name:     "Tibalt Impostor",
+		Age:      "5",
+		Sex:      "m",
+		Email:    "tibalt@mtg.com",
+		Password: "123change",
+	}
+	test.CreateUser(f.r, u, t)
 
 	body := []byte(`{
 	    "email": "tibalt@mtg.com",
@@ -234,7 +333,7 @@ func TestShouldDeleteUserCorrectly(t *testing.T) {
 	}`)
 
 	token := loginTest(body)
-	r, err := http.NewRequest("DELETE", baseUrl+"/user/2", nil)
+	r, err := http.NewRequest("DELETE", baseUrl+"/user/1", nil)
 	r.Header.Add("access-token", token["token"].(string))
 	resp, err := f.client.Do(r)
 
