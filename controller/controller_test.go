@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/josofm/gideon/controller"
-	"github.com/josofm/gideon/mock"
 	"github.com/josofm/gideon/model"
+	"github.com/josofm/gideon/test"
 	"github.com/josofm/mtg-sdk-go"
 	"github.com/stretchr/testify/assert"
 )
@@ -150,7 +150,7 @@ func TestShouldGetCardByNameCorrectly(t *testing.T) {
 func TestShouldCreateDeckCorrectly(t *testing.T) {
 	expectedName := "best deck"
 	f := setup(model.User{}, nil, expectedName)
-	deck := mock.GetBasicDeck()
+	deck := test.GetBasicDeck()
 	deckName, err := f.c.CreateDeck(deck, 1)
 	assert.Nil(t, err, "Should be nil!")
 	assert.Equal(t, expectedName, deckName, "Should be Equal!")
@@ -166,7 +166,7 @@ func TestGetCardByID(t *testing.T) {
 func TestShouldGetErrorCreatingADeckWhenCardCantBeCommander(t *testing.T) {
 	expectedName := ""
 	f := setup(model.User{}, nil, expectedName)
-	deck := mock.GetBasicDeck()
+	deck := test.GetBasicDeck()
 	time.Sleep(2 * time.Second) //sometimes the mtg api down
 	deck.Commander.Card.MultiverseId = "409574"
 	deckName, err := f.c.CreateDeck(deck, 1)
@@ -177,7 +177,7 @@ func TestShouldGetErrorCreatingADeckWhenCardCantBeCommander(t *testing.T) {
 func TestShouldGetErrorCreatingADeckWhenCardisBanned(t *testing.T) {
 	expectedName := ""
 	f := setup(model.User{}, nil, expectedName)
-	deck := mock.GetBasicDeck()
+	deck := test.GetBasicDeck()
 	deck.Commander.Card.MultiverseId = "425897"
 	deckName, err := f.c.CreateDeck(deck, 1)
 	assert.NotNil(t, err, "Should be nil!")

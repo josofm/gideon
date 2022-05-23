@@ -94,7 +94,7 @@ func (api *Api) register(w http.ResponseWriter, r *http.Request) {
 
 	email, err := api.controller.CreateUser(user)
 	if err != nil { //validate kind of errors
-		if err.Error() == "User already Registred" {
+		if err.Error() == "user already registred" {
 			sendErrorMessage(w, http.StatusConflict, "This user is already register in our system")
 			return
 		}
@@ -267,6 +267,7 @@ func (api *Api) validateTokenUser(method string, r *http.Request) (int, int, err
 		return http.StatusBadRequest, int(token.UserID), errors.New("Wrong token")
 	}
 	tokenIdString := fmt.Sprintf("%v", token.UserID)
+	log.Printf("[%v] TOKEN user", tokenIdString)
 	if id != tokenIdString {
 		log.Printf("[%v] wrong user", method)
 		return http.StatusForbidden, int(token.UserID), errors.New("field not allowed")
@@ -276,7 +277,7 @@ func (api *Api) validateTokenUser(method string, r *http.Request) (int, int, err
 }
 
 func send(w http.ResponseWriter, code int, val interface{}) {
-	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, TRACE, GET, HEAD, POST, PUT")
+	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, TRACE, GET, HEAD, POST, PATCH")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")

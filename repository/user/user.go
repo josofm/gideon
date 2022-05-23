@@ -40,7 +40,7 @@ func (u *UserRepository) Create(user model.User, dbPool *gorm.DB) (string, error
 	_, err := u.getUserByEmail(user.Email, dbPool)
 	if err == nil {
 		log.Print("[Create] This user already exists")
-		return "", errors.New("User already Registred")
+		return "", errors.New("user already registred")
 	} else if err != nil && err != gorm.ErrRecordNotFound {
 		log.Print("[Create] Some sql problem")
 		return "", err
@@ -69,18 +69,11 @@ func (u *UserRepository) Get(id uint, dbPool *gorm.DB) (model.User, error) {
 	return user, nil
 }
 
-//  db.Model(&product).Update("Price", 2000)
 func (u *UserRepository) Update(user model.User, dbPool *gorm.DB) error {
 
 	if result := dbPool.Model(&user).Updates(user); result.Error != nil {
 		return result.Error
 	}
-	// if _, err := u.Get(user.ID, dbPool); err != nil {
-	// 	return err
-	// }
-	// if result := dbPool.Updates(&user); result.Error != nil {
-	// 	return result.Error
-	// }
 	return nil
 }
 
