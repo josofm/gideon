@@ -4,16 +4,12 @@ services:
     image: gideon
     depends_on:
       - db
-    # volumes:
-    #   - .:/home/josue-machado/workspace/personal_projects/joso/gideon
     ports:
       - "80:80"
     networks:
       - some-network
   db:
     image: postgres
-    # volumes:
-    # - ./mock/db/:/docker-entrypoint-initdb.d/
     environment: 
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=teste
