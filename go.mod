@@ -9,7 +9,7 @@ require (
 	github.com/lib/pq v1.10.0
 	github.com/stretchr/testify v1.7.0
 	github.com/subosito/gotenv v1.2.0
-	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
+	golang.org/x/crypto v0.6.0
 	gorm.io/driver/postgres v1.0.8
 	gorm.io/gorm v1.21.8
 )
@@ -28,6 +28,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
