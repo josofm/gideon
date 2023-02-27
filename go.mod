@@ -1,6 +1,6 @@
 module github.com/josofm/gideon
 
-go 1.17
+go 1.20
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.4.1
@@ -28,6 +28,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
