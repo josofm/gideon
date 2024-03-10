@@ -1,6 +1,6 @@
 module github.com/josofm/gideon
 
-go 1.20
+go 1.21
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.4.1

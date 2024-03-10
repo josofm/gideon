@@ -16,7 +16,6 @@ type Deck struct {
 	Partner   Card   `json:partner,omitempty`
 	Owner     User   `json:owner,omitempty`
 	OwnerID   int
-	Cards     []Card `gorm:"many2many:deck_cards;" json:"cards,omitempty"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
@@ -26,18 +25,6 @@ type Card struct {
 	gorm.Model
 	ID        mtg.MultiverseId `gorm:"primaryKey" json:"multiverseId,omitempty"`
 	Card      mtg.Card         `json:"card,omitempty"`
-	Price     Price            `json:"price, omitempty"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-}
-
-type Price struct {
-	gorm.Model
-	CardID    uint64
-	Minimun   float64 `json:"minimun,omitempty"`
-	Average   float64 `json:"average,omitempty"`
-	Maximum   float64 `json:"maximun,omitempty"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`

@@ -28,7 +28,7 @@ imagedev:
 build: modcache imagedev
 	$(runbuild) go build -v -ldflags "-w -s -X main.Version=$(version)" -o ./cmd/gideon/gideon ./cmd/gideon
 
-check: modcache imagedev
+check: imagedev
 	$(rundev) ./hack/check.sh $(suite) $(test)
 
 start-compose:
