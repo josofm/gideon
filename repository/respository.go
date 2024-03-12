@@ -47,7 +47,6 @@ func (r *Repository) connectDB() error {
 	r.dbPool.AutoMigrate(&model.User{})
 	r.dbPool.AutoMigrate(&model.Deck{})
 	r.dbPool.AutoMigrate(&model.Card{})
-	r.dbPool.AutoMigrate(&model.Price{})
 
 	return nil
 

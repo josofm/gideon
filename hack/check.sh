@@ -1,16 +1,22 @@
 #!/bin/bash
 
+set -o errexit
+set -o nounset
 
-if [ $# -eq 0 ]
-then
-    go test -tags unit -race -covermode=atomic -timeout 30s ./...
+run_cmd="go test -timeout 30s -tags=unit -p 1"
+
+if [ $# -eq 0 ]; then
+    $run_cmd ./...
     exit
 fi
 
-if [ $# -eq 1 ]
-    then
-        go test -tags unit -run $1 -race -covermode=atomic -timeout 60s ./...
-        exit
+if [ $# -eq 1 ]; then
+    testfile=$1
+    echo "Running test $testfile"
+    $run_cmd $testfile
 fi
 
-go test -tags unit -run $1 -m $2 -race -covermode=atomic -timeout 60s ./...
+testfile=$1
+testname=$2
+echo "Running testname $testname on testfile $testfile"
+$run_cmd $testfile -run $testname
