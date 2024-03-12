@@ -2,6 +2,7 @@ FROM golang:1.21 as devimage
 
 ENV GOLANG_CI_LINT_VERSION=V1.56.2
 ENV GIT_TERMINAL_PROMPT=1
+ENV GOPROXY=direct
 
 RUN cd /usr && \
     wget -O - -q https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s ${GOLANG_CI_LINT_VERSION}
@@ -25,8 +26,8 @@ RUN apk --no-cache update && \
 	rm -rf /var/cache/apk/*
 WORKDIR /
 
-COPY --from=buildimage /app/it-o ./
+COPY --from=buildimage /app/cmd/gideon/gideon /app/gideon
 
 EXPOSE 80
 
-ENTRYPOINT ["/gideon"]
+ENTRYPOINT ["/app/gideon"]

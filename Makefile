@@ -1,7 +1,7 @@
 pjname=gideon
 version?=latest
 img=$(pjname):$(version)
-rundev=docker run --rm  $(img)
+rundev=docker run --rm $(img)
 runbuild=docker run --rm -e CGO_ENABLED=0 GOOS=linux -e GOARCH=amd64 $(img)
 rundevti=docker run -ti --rm $(img)
 runcompose=docker compose run --rm

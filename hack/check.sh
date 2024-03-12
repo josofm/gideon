@@ -3,14 +3,14 @@
 set -o errexit
 set -o nounset
 
-run_cmd="go test -timeout 30s -tag=unit -p 1"
+run_cmd="go test -timeout 30s -tags=unit -p 1"
 
 if [ $# -eq 0 ]; then
-    $run_cmd ./..
+    $run_cmd ./...
     exit
 fi
 
-if [$# -eq 1]; then
+if [ $# -eq 1 ]; then
     testfile=$1
     echo "Running test $testfile"
     $run_cmd $testfile
